@@ -28,6 +28,37 @@ def load_data(data_dir):
     return instances
 
 
+def split_instances(instances, split_file='saved_split'):
+    """
+    split the instances using the saved split file
+    :param instances: the instances need to be split into train, dev, and test
+    :param split_file: the name of the saved split file
+    :return: train_instances, dev_instances, and test_instances
+    """
+    # load the split file
+    with open(split_file, 'r') as splitFile:
+        split_dict = json.loads(splitFile.read())
+
+    # load the anchor id of train, dev, and test
+    train_ids = split_dict['train']
+    dev_ids = split_dict['dev']
+    test_ids = split_dict['test']
+
+    # load the instances of train, dev, and test
+    train_instances = []
+    dev_instances = []
+    test_instances = []
+    for instance in instances:
+        if instance['instance_id'] in train_ids:
+            train_instances.append(instance)
+        if instance['instance_id'] in dev_ids:
+            dev_instances.append(instance)
+        if instance['instance_id'] in test_ids:
+            test_instances.append(instance)
+
+    return train_instances, dev_instances, test_instances
+
+
 def add_baseline_output(instances):
     """
     add majority baseline output to the instance (dictionary)
