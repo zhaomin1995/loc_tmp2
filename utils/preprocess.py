@@ -2,7 +2,10 @@ import json
 import torch
 import transformers as ppb
 import numpy as np
+import torchvision.models as models
 from collections import Counter
+from PIL import Image
+from torchvision import transforms
 
 
 def load_data(data_dir):
@@ -44,7 +47,7 @@ def add_bert_output(instances, anchor_only):
     add bert output to the instances
     :param instances: instances without bert output
     :param anchor_only: only extract feature of anchor tweet or anchor+context
-    :return:
+    :return: instances with bert output
     """
     # load the BERT model and the tokenizer
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -118,6 +121,80 @@ def add_bert_output(instances, anchor_only):
                 # move the tensor to CPU to free GPU memory
                 context_bert_feature = last_hidden_states[0][:, 0, :].to('cpu')
                 instance[f'context{i}_bertoutput'] = context_bert_feature
+
+    return instances
+
+
+def add_vgg_output(instances, anchor_only):
+    """
+    add vgg output to the instances
+    :param instances: instances without vgg output
+    :param anchor_only: only extract feature of anchor tweet or anchor+context
+    :return: instances with vgg output
+    """
+
+    # Use the GPU, if available, to get the image representation
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    # get the pretrained VGG16 (discard the last classification layer)
+    vgg16_model = models.vgg16(pretrained=True)
+    for p in vgg16_model.parameters():
+        p.requires_grad = False
+    vgg16_model = vgg16_model.to(device)
+    vgg16_model.eval()
+
+    for instance in instances:
+
+        # get the path of image file
+        filepath = instance['anchor_imagepath']
+
+        # preprocess the image, convert it into RGB format if it is not RGB
+        input_image = Image.open(filepath).convert('RGB')
+        preprocess = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+        input_tensor = preprocess(input_image).unsqueeze(0).to(device)
+
+        # get the image representation
+        with torch.no_grad():
+
+            output = vgg16_model(input_tensor)
+            # move the tensor to the CPU to free GPU memory
+            output = output.to('cpu')
+
+        # add image representation into the dictionary
+        instance['anchor_vggoutput'] = output
+
+        if not anchor_only:
+
+            for i in range(8, 14):
+
+                # get the path of image file if the image exists
+                imagekey = f"context{i}_imagepath"
+                if imagekey in instance.keys():
+                    filepath = instance[imagekey]
+
+                    # preprocess the image, convert it into RGB format if it is not RGB
+                    input_image = Image.open(filepath).convert('RGB')
+                    preprocess = transforms.Compose([
+                        transforms.Resize(256),
+                        transforms.CenterCrop(224),
+                        transforms.ToTensor(),
+                        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                    ])
+                    input_tensor = preprocess(input_image).unsqueeze(0).to(device)
+
+                    # get the image representation
+                    with torch.no_grad():
+                        output = vgg16_model(input_tensor)
+                        # move the tensor to the CPU to free GPU memory
+                        output = output.to('cpu')
+
+                    # add image representation into the dictionary
+                    instance[f"context{i}_vggoutput"] = output
 
     return instances
 
