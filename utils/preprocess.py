@@ -12,7 +12,7 @@ def load_data(data_dir, mode):
     """
     load the corpus, and add task info
     :param data_dir: path to the annotation file
-    :param mode: baseline / simple_nn_text_only / simple_nn_image_only / simple_nn_text_image / complicated_nn
+    :param mode: baseline / anchor_text_only / anchor_image_only / anchor_text_image / complicated_nn
     :return: instances (dictionary)
     """
     instances = []
@@ -26,7 +26,7 @@ def load_data(data_dir, mode):
                 continue
             else:
                 # add task info
-                instance['task'] = mode
+                instance['tasktype'] = mode
                 instances.append(instance)
     return instances
 
@@ -232,4 +232,19 @@ def add_vgg_output(instances, anchor_only):
 
     return instances
 
+
+def get_final_feats(instance):
+    """
+
+    :param instance:
+    :return:
+    """
+    task_type = instance['tasktype']
+    if task_type == 'anchor_text_only':
+        feat = instance['anchor_bertoutput']
+    if task_type == 'anchor_image_only':
+        feat = instance['anchor_vggoutput']
+    if task_type == 'anchor_text_image':
+        feat = torch.cat((instance['anchor_bertoutput'], instance['anchor_vggoutput']), dim=1)
+    return feat
 

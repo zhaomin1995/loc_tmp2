@@ -4,13 +4,14 @@ from utils import preprocess
 from sklearn.metrics import classification_report
 
 
-def main(data_dir):
+def main(mode):
 
+    data_dir = 'data'
     annotation_filename = "new_annot.json"
     annotation_dir = os.path.join(data_dir, 'annotations', annotation_filename)
 
     # load data
-    instances = preprocess.load_data(annotation_dir)
+    instances = preprocess.load_data(annotation_dir, mode)
 
     # add majority baseline output
     instances = preprocess.add_baseline_output(instances)
@@ -26,7 +27,7 @@ def main(data_dir):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-data_dir', '--dir', help='The path of the data folder')
+    parser.add_argument('-mode', '--mode', help='anchor_text_only or anchor_image_only or anchor_text_image')
     args = parser.parse_args()
 
-    main(data_dir=args.dir)
+    main(mode=args.mode)
