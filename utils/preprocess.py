@@ -8,10 +8,11 @@ from PIL import Image
 from torchvision import transforms
 
 
-def load_data(data_dir):
+def load_data(data_dir, mode):
     """
-    load the corpus
+    load the corpus, and add task info
     :param data_dir: path to the annotation file
+    :param mode: baseline / simple_nn_text_only / simple_nn_image_only / simple_nn_text_image / complicated_nn
     :return: instances (dictionary)
     """
     instances = []
@@ -24,6 +25,8 @@ def load_data(data_dir):
             if num_workers == 0:
                 continue
             else:
+                # add task info
+                instance['task'] = mode
                 instances.append(instance)
     return instances
 
