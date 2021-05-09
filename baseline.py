@@ -15,9 +15,12 @@ def main(data_dir):
     # add majority baseline output
     instances = preprocess.add_baseline_output(instances)
 
+    # split the instances into train, dev, and test
+    train_instances, dev_instances, test_instances = preprocess.split_instances(instances)
+
     # make predication and evaluate
-    gold_labels = [x['adjudicated_label'] for x in instances]
-    pred_labels = [x['baseline_output'] for x in instances]
+    gold_labels = [x['adjudicated_label'] for x in test_instances]
+    pred_labels = [x['baseline_output'] for x in test_instances]
     print(classification_report(gold_labels, pred_labels))
 
 
