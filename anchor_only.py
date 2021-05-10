@@ -12,6 +12,7 @@ from sklearn.metrics import classification_report
 
 # define some global parameters
 num_epochs = 100
+batch_size = 16
 patience = 5
 learning_rate = 1e-04
 
@@ -40,7 +41,7 @@ def main(mode, model_type):
     train_instances, dev_instances, test_instances = preprocess.split_instances(instances)
 
     # get the data loader of train, dev, and test
-    train_loader, dev_loader, test_loader = preprocess.get_data_loader(train_instances, dev_instances, test_instances)
+    train_loader, dev_loader, test_loader = preprocess.get_data_loader(train_instances, dev_instances, test_instances, batch_size)
 
     # define the label mapping
     label_to_idx = {'Yes': 1, 'No': 0}

@@ -43,7 +43,7 @@ def save_prediction(mode, pred_labels, test_instances, prediction_dir='predictio
         for index, instance in enumerate(test_instances):
             # remove the bert_output and resnet_output
 
-            for key in instance.keys():
+            for key in list(instance.keys()):
                 if 'vggoutput' in key or 'bertoutput' in key:
                     del instance[key]
 
