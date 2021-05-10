@@ -14,7 +14,7 @@ from sklearn.metrics import classification_report
 num_epochs = 100
 batch_size = 16
 patience = 5
-learning_rate = 1e-04
+learning_rate = 1e-02
 
 
 def main(mode, model_type):
@@ -25,12 +25,14 @@ def main(mode, model_type):
 
     # add BERT output and/or VGG output
     if mode == 'anchor_text_only' or mode == 'anchor_text_image':
+        print("Extracting textual features using BERT ...")
         start_time = time.time()
         instances = preprocess.add_bert_output(instances, anchor_only=True)
         end_time = time.time()
         elapsed_mins, elapsed_secs = learning_helper.epoch_time(start_time, end_time)
         print(f"Time spent for BERT: {elapsed_mins}m {elapsed_secs}s")
     if mode == 'anchor_image_only' or mode == 'anchor_text_image':
+        print("Extracting image features using VGG ...")
         start_time = time.time()
         instances = preprocess.add_vgg_output(instances, anchor_only=True)
         end_time = time.time()
@@ -57,7 +59,7 @@ def main(mode, model_type):
         classifier = classifier.to(device)
 
         # define the optimizer, loos function, and some parameters
-        optimizer = optim.Adam(classifier.parameters(), lr=1e-04)
+        optimizer = optim.Adam(classifier.parameters(), lr=learning_rate)
         criterion = nn.CrossEntropyLoss().to(device)
 
         # train the model

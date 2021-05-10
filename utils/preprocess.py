@@ -1,4 +1,5 @@
 import json
+import random
 import torch
 import transformers as ppb
 import numpy as np
@@ -59,6 +60,11 @@ def split_instances(instances, split_file='saved_split'):
             dev_instances.append(instance)
         if instance['instance_id'] in test_ids:
             test_instances.append(instance)
+
+    # shuffle the instances to improve the model training
+    random.shuffle(train_instances)
+    random.shuffle(dev_instances)
+    random.shuffle(test_instances)
 
     return train_instances, dev_instances, test_instances
 
