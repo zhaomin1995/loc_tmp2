@@ -6,6 +6,7 @@ import torchvision.models as models
 from collections import Counter
 from PIL import Image
 from torchvision import transforms
+from torch.utils.data import Dataset, DataLoader
 
 
 def load_data(data_dir, mode):
@@ -235,9 +236,9 @@ def add_vgg_output(instances, anchor_only):
 
 def get_final_feats(instance):
     """
-
-    :param instance:
-    :return:
+    get the input of the network based on mode
+    :param instance: instance
+    :return: input of the network
     """
     task_type = instance['tasktype']
     if task_type == 'anchor_text_only':
@@ -247,4 +248,40 @@ def get_final_feats(instance):
     if task_type == 'anchor_text_image':
         feat = torch.cat((instance['anchor_bertoutput'], instance['anchor_vggoutput']), dim=1)
     return feat
+
+
+class TweetDataset(Dataset):
+
+    # write a new class to load our dataset
+    def __init__(self, instances):
+        self.instances = instances
+
+    def __getitem__(self, index):
+        instance = self.instances[index]
+        label = instance['adjudicated_label']
+        feat = get_final_feats(instance)
+        return feat, label
+
+    def __len__(self):
+        return len(self.instances)
+
+
+def get_data_loader(train_instances, dev_instances, test_instances, batch_size):
+    """
+    get the data loaders for train, development, and test
+    :param train_instances: the training data
+    :param dev_instances: the development data
+    :param test_instances: the test data
+    :param batch_size: batch_size
+    :return: data loaders for train, development, and test
+    """
+    train_dataset = TweetDataset(train_instances)
+    dev_dataset = TweetDataset(dev_instances)
+    test_dataset = TweetDataset(test_instances)
+
+    train_loader = DataLoader(train_dataset, batch_size=batch_size)
+    dev_loader = DataLoader(dev_dataset, batch_size=batch_size)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size)
+
+    return train_loader, dev_loader, test_loader
 
