@@ -10,7 +10,7 @@ hidden_dim = 512
 dropout_rate = 0.2
 
 
-class AnchorImageOnlyModel(nn.Module):
+class AnchorTextImageModel(nn.Module):
 
     def __init__(self):
         super().__init__()

@@ -1,4 +1,6 @@
 from model.anchor_text_only import AnchorTextOnlyModel
+from model.anchor_image_only import AnchorImageOnlyModel
+from model.anchor_text_image import AnchorTextImageModel
 
 
 def epoch_time(start_time, end_time):
@@ -18,7 +20,13 @@ def get_model(mode):
     """
     get the initialized model based on mode
     :param mode: anchor_text_only or anchor_image_only or anchor_text_image
-    :return:
+    :return: initialized model (parameters are randomly initialized)
     """
     if mode == 'anchor_text_only':
         model = AnchorTextOnlyModel()
+    if mode == 'anchor_image_only':
+        model = AnchorImageOnlyModel()
+    if mode == 'anchor_text_image':
+        model = AnchorTextImageModel()
+    return model
+

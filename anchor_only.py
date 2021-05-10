@@ -34,6 +34,9 @@ def main(mode):
     # check if we can use GPU
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    # get the model based on mode
+    classifier = learning_helper.get_model(mode)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
