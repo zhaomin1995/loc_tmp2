@@ -14,7 +14,7 @@ from sklearn.metrics import classification_report
 num_epochs = 100
 batch_size = 16
 patience = 5
-learning_rate = 1e-02
+learning_rate = 1e-03
 
 
 def main(mode, model_type):
