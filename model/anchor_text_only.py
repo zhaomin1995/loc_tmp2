@@ -5,7 +5,7 @@ import torch.nn.functional as F
 bert_feat_dim = 768
 output_dim = 2
 hidden_dim = 4096
-dropout_rate = 0.2
+dropout_rate = 0.1
 
 
 class AnchorTextOnlyModel(nn.Module):

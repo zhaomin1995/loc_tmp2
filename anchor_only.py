@@ -11,9 +11,9 @@ from sklearn.metrics import classification_report
 
 
 # define some global parameters
-num_epochs = 100
+num_epochs = 1000
 batch_size = 16
-patience = 5
+patience = 10
 learning_rate = 1e-03
 
 
@@ -52,11 +52,11 @@ def main(mode, model_type):
     # check if we can use GPU
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    if model_type == 'retrain':
+    # get the model based on mode and move model to GPU is GPU is available
+    classifier = learning_helper.get_model(mode)
+    classifier = classifier.to(device)
 
-        # get the model based on mode and move model to GPU is GPU is available
-        classifier = learning_helper.get_model(mode)
-        classifier = classifier.to(device)
+    if model_type == 'retrain':
 
         # define the optimizer, loos function, and some parameters
         optimizer = optim.Adam(classifier.parameters(), lr=learning_rate)
@@ -65,7 +65,7 @@ def main(mode, model_type):
         # train the model
         best_valid_loss = float('inf')
         check_stopping = 0
-        model_name = f'retrained_{mode}_classifier.pkl'
+        model_name = f'retrained_{mode}_classifier.pt'
         model_path = os.path.join('retrained_models', model_name)
         for i in range(num_epochs):
 
@@ -84,7 +84,7 @@ def main(mode, model_type):
             if dev_loss < best_valid_loss:
                 check_stopping = 0
                 best_valid_loss = dev_loss
-                torch.save(classifier, model_path)
+                torch.save(classifier.state_dict(), model_path)
             else:
                 check_stopping += 1
                 print(f"The loss on development set does not decrease")
@@ -94,10 +94,9 @@ def main(mode, model_type):
 
     if model_type == 'pretrained':
 
-        model_name = f'pretrained_{mode}_classifier.pkl'
+        model_name = f'pretrained_{mode}_classifier.pt'
         model_path = os.path.join('pretrained_models', model_name)
-        classifier = torch.load(model_path)
-        classifier = classifier.to(device)
+        classifier.load_state_dict(torch.load(model_path))
 
     classifier.eval()
     pred_labels = evaluator.test_model(classifier, test_loader, idx_to_label, device)
