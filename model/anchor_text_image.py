@@ -7,7 +7,7 @@ bert_feat_dim = 768
 vgg_feat_dim = 1000
 output_dim = 2
 hidden_dim = 512
-dropout_rate = 0.2
+dropout_rate = 0.5
 
 
 class AnchorTextImageModel(nn.Module):
