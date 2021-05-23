@@ -242,7 +242,7 @@ def add_vgg_output(instances, anchor_only):
 
 def get_final_feats(instance):
     """
-    get the input of the network based on mode
+    get the input of the network based on mode (for simple_nn)
     :param instance: instance
     :return: input of the network
     """
@@ -253,6 +253,18 @@ def get_final_feats(instance):
         feat = instance['anchor_vggoutput']
     if task_type == 'anchor_text_image':
         feat = torch.cat((instance['anchor_bertoutput'], instance['anchor_vggoutput']), dim=1)
+    if task_type in ['all_bert_only', 'all_bert_lstm', 'all_bert_lstm_combined']:
+        feat = torch.cat((
+            instance['context8_bertoutput'],
+            instance['context9_bertoutput'],
+            instance['context10_bertoutput'],
+            instance['anchor_bertoutput'],
+            instance['context11_bertoutput'],
+            instance['context12_bertoutput'],
+            instance['context13_bertoutput'],
+        ), dim=1)
+        if 'additional_feature' in instance.keys():
+            feat = torch.cat((feat, instance['additional_feature']), dim=1)
     return feat
 
 
