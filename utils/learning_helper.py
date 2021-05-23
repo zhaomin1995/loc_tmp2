@@ -18,10 +18,11 @@ def epoch_time(start_time, end_time):
     return elapsed_mins, elapsed_secs
 
 
-def get_model(mode):
+def get_model(mode, additional_feat_dim=0):
     """
     get the initialized model based on mode
     :param mode: anchor_text_only or anchor_image_only or anchor_text_image
+    :param additional_feat_dim: the dimensionality of additional features
     :return: initialized model (parameters are randomly initialized)
     """
     if mode == 'anchor_text_only':
@@ -31,7 +32,7 @@ def get_model(mode):
     if mode == 'anchor_text_image':
         model = AnchorTextImageModel()
     if mode == 'all_bert_only':
-        model = ComplicatedBertOnly()
+        model = ComplicatedBertOnly(additional_feat_dim=additional_feat_dim)
     return model
 
 
