@@ -2,6 +2,7 @@ import torch
 from model.anchor_text_only import AnchorTextOnlyModel
 from model.anchor_image_only import AnchorImageOnlyModel
 from model.anchor_text_image import AnchorTextImageModel
+from model.complicated_bert_only import ComplicatedBertOnly
 
 
 def epoch_time(start_time, end_time):
@@ -29,6 +30,8 @@ def get_model(mode):
         model = AnchorImageOnlyModel()
     if mode == 'anchor_text_image':
         model = AnchorTextImageModel()
+    if mode == 'all_bert_only':
+        model = ComplicatedBertOnly()
     return model
 
 
