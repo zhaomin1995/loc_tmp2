@@ -90,9 +90,6 @@ def main(mode, model_type):
         model_path = os.path.join('pretrained_models', model_name)
         classifier.load_state_dict(torch.load(model_path))
 
-    # set the model as evaluation mode
-    classifier.eval()
-
     # evaluate the retrained/pretrained model
     pred_labels = evaluator.test_model(classifier, test_loader, idx_to_label, device)
     gold_labels = [x['adjudicated_label'] for x in test_instances]
