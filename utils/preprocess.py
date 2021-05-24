@@ -8,6 +8,7 @@ from collections import Counter
 from PIL import Image
 from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
+from tqdm import tqdm
 
 
 def load_data(data_dir, mode):
@@ -111,6 +112,7 @@ def add_bert_output(instances, anchor_only):
         all_attention_mask = torch.tensor(all_attention_mask)
 
         # add the bert input into the passed argument -- instances
+        pbar = tqdm(total=len(instances))
         for index, instance in enumerate(instances):
             with torch.no_grad():
                 small_padded_ids = all_padded_ids[index].unsqueeze(0).to(device)
@@ -120,6 +122,8 @@ def add_bert_output(instances, anchor_only):
             # after getting the representation, move the tensor to CPU to free GPU memory
             anchor_bert_feature = last_hidden_states[0][:, 0, :].to('cpu')
             instance['anchor_bertoutput'] = anchor_bert_feature
+            pbar.update(1)
+        pbar.close()
 
     else:
 
@@ -140,6 +144,7 @@ def add_bert_output(instances, anchor_only):
         all_attention_mask = torch.tensor(all_attention_mask)
 
         # add bert output for each of seven tweets of every instance
+        pbar = tqdm(total=len(instances))
         for index, instance in enumerate(instances):
 
             # add bert output of anchor tweet
@@ -162,6 +167,8 @@ def add_bert_output(instances, anchor_only):
                 # move the tensor to CPU to free GPU memory
                 context_bert_feature = last_hidden_states[0][:, 0, :].to('cpu')
                 instance[f'context{i}_bertoutput'] = context_bert_feature
+            pbar.update(1)
+        pbar.close()
 
     return instances
 
@@ -184,6 +191,7 @@ def add_vgg_output(instances, anchor_only):
     vgg16_model = vgg16_model.to(device)
     vgg16_model.eval()
 
+    pbar = tqdm(total=len(instances))
     for instance in instances:
 
         # get the path of image file
@@ -236,6 +244,9 @@ def add_vgg_output(instances, anchor_only):
 
                     # add image representation into the dictionary
                     instance[f"context{i}_vggoutput"] = output
+
+        pbar.update(1)
+    pbar.close()
 
     return instances
 
