@@ -98,7 +98,6 @@ def main(mode, model_type):
         model_path = os.path.join('pretrained_models', model_name)
         classifier.load_state_dict(torch.load(model_path))
 
-    classifier.eval()
     pred_labels = evaluator.test_model(classifier, test_loader, idx_to_label, device)
     gold_labels = [x['adjudicated_label'] for x in test_instances]
     print('-' * 60)

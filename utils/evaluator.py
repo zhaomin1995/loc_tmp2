@@ -11,6 +11,10 @@ def test_model(model, test_loader, idx_to_label, device):
     :param idx_to_label: convert the index to the label
     :return: the predicted labels
     """
+
+    # set the model as evaluation mode
+    model.eval()
+
     pred_labels = []
     for test_x, test_y in test_loader:
         with torch.no_grad():
