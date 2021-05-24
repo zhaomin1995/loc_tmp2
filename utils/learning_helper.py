@@ -52,6 +52,9 @@ def train(classifier, iterator, optimizer, criterion, device, label_to_idx):
     epoch_correct = 0
     num_instances = 0
 
+    # set the model as training mode
+    classifier.train()
+
     for batch_x, batch_y in iterator:
 
         # get the text representation and image representation
@@ -94,6 +97,7 @@ def evaluate(classifier, iterator, criterion, device, label_to_idx):
     epoch_correct = 0
     num_instances = 0
 
+    # set the model as evaluation mode
     classifier.eval()
 
     with torch.no_grad():
