@@ -50,7 +50,7 @@ def main(mode, model_type):
 
     if model_type == 'retrain':
 
-        # define the optimizer, loos function, and some parameters
+        # define the optimizer, loss function, and some parameters
         optimizer = optim.Adam(classifier.parameters(), lr=learning_rate)
         criterion = nn.CrossEntropyLoss().to(device)
 
