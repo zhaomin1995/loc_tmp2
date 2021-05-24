@@ -12,9 +12,10 @@ dropout_rate = 0.5
 
 class ComplicatedBertLSTM(nn.Module):
 
-    def __init__(self):
+    def __init__(self, additional_feat_dim=0):
         super(ComplicatedBertLSTM, self).__init__()
         self.bert_feat_dim = bert_feat_dim
+        self.additional_feat_dim = additional_feat_dim
         self.lstm_dim = lstm_dim
         self.output_dim = output_dim
         self.hidden_dim = hidden_dim
