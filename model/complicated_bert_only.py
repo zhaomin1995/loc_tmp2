@@ -12,7 +12,7 @@ dropout_rate = 0.5
 class ComplicatedBertOnly(nn.Module):
 
     def __init__(self, additional_feat_dim=0):
-        super().__init__()
+        super(ComplicatedBertOnly, self).__init__()
         self.bert_feat_dim = bert_feat_dim
         self.additional_feat_dim = additional_feat_dim
         self.output_dim = output_dim
