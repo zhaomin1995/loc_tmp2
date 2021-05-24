@@ -13,7 +13,7 @@ dropout_rate = 0.5
 class AnchorTextImageModel(nn.Module):
 
     def __init__(self):
-        super().__init__()
+        super(AnchorTextImageModel, self).__init__()
         self.bert_feat_dim = bert_feat_dim
         self.vgg_feat_dim = vgg_feat_dim
         self.output_dim = output_dim

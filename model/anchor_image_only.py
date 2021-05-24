@@ -11,7 +11,7 @@ dropout_rate = 0.5
 class AnchorImageOnlyModel(nn.Module):
 
     def __init__(self):
-        super().__init__()
+        super(AnchorImageOnlyModel, self).__init__()
         self.vgg_feat_dim = vgg_feat_dim
         self.output_dim = output_dim
         self.hidden_dim = hidden_dim

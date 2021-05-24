@@ -11,7 +11,7 @@ dropout_rate = 0.5
 class AnchorTextOnlyModel(nn.Module):
 
     def __init__(self):
-        super().__init__()
+        super(AnchorTextOnlyModel, self).__init__()
         self.bert_feat_dim = bert_feat_dim
         self.output_dim = output_dim
         self.hidden_dim = hidden_dim
