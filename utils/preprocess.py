@@ -11,6 +11,7 @@ from PIL import Image
 from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
+from sklearn.feature_extraction import DictVectorizer
 
 
 def load_data(data_dir, mode):
@@ -89,36 +90,55 @@ def split_instances(instances, split_file='saved_split'):
 
 def add_additional_features(instances, mpqa_lexicon):
     nlp = spacy.load('en_core_web_sm')
+    feat_dicts = []
+    pbar = tqdm(total=len(instances))
     for instance in instances:
-        for key in list(instance.keys()):
-            if key.endswith("tweettext"):
-                tweet = nlp(instance[key])
-                featkey = key.split("_")[0] + "_addfeat"
-                addfeat = {}
+        # ensure the order is the same as in the later part
+        keys = sorted([key for key in instance.keys() if key.endswith("tweettext")])
+        for key in keys:
+            tweet = nlp(instance[key])
+            #             print(tweet)
+            featkey = key.split("_")[0] + "_addfeat"
+            addfeat = {}
 
-                # entirely uppercase words
-                num_uppercasewords = len(['x' for token in tweet if token.text.isupper()])
-                addfeat['num_uppercasewords'] = num_uppercasewords
+            # entirely uppercase words
+            num_uppercasewords = len(['x' for token in tweet if token.text.isupper()])
+            addfeat['num_uppercasewords'] = num_uppercasewords
 
-                # the number of URLs
-                num_urls = len(['x' for token in tweet if token.text.startswith("http")])
-                addfeat['num_urls'] = num_urls
+            # the number of URLs
+            num_urls = len(['x' for token in tweet if token.text.startswith("http")])
+            addfeat['num_urls'] = num_urls
 
-                # the number of exclamation marks
-                num_exclamationmarks = len(['x' for token in tweet if token.text == '!'])
-                addfeat['num_exclamationmarks'] = num_exclamationmarks
+            # the number of exclamation marks
+            num_exclamationmarks = len(['x' for token in tweet if token.text == '!'])
+            addfeat['num_exclamationmarks'] = num_exclamationmarks
 
-                # the number of strongly subjective words in MPQA lexicon
-                num_strongsubj = len([token for token in tweet if token.text in mpqa_lexicon['strongsubj']])
-                addfeat['num_strongsubj'] = num_strongsubj
+            # the number of strongly subjective words in MPQA lexicon
+            num_strongsubj = len([token for token in tweet if token.text in mpqa_lexicon['strongsubj']])
+            addfeat['num_strongsubj'] = num_strongsubj
 
-                # the number of weakly subjective words in MPQA lexicon
-                num_weaksubj = len([token for token in tweet if token.text in mpqa_lexicon['weaksubj']])
-                addfeat['num_weaksubj'] = num_weaksubj
+            # the number of weakly subjective words in MPQA lexicon
+            num_weaksubj = len([token for token in tweet if token.text in mpqa_lexicon['weaksubj']])
+            addfeat['num_weaksubj'] = num_weaksubj
 
-                #
+            #
 
-                instance[featkey] = addfeat
+            instance[featkey] = addfeat
+            feat_dicts.append(addfeat)
+        pbar.update(1)
+    pbar.close()
+
+    dv = DictVectorizer(sparse=False)
+    feat_vectorized = dv.fit_transform(feat_dicts)
+
+    for index_outside, instance in enumerate(instances):
+        small_feats = feat_vectorized[index_outside * 7:(index_outside + 1) * 7]
+        # ensure the order is the same as the previous part
+        keys = sorted([key for key in instance.keys() if key.endswith("tweettext")])
+        for index_inside, key in enumerate(keys):
+            newfeatkey = key.split("_")[0] + "_addfeattensor"
+            feattensor = torch.FloatTensor(small_feats[index_inside]).to('cpu')
+            instance[newfeatkey] = feattensor
 
     return instances
 
