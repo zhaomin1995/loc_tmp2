@@ -41,7 +41,7 @@ def load_mpqa(mpqa_path):
     """
     load MPQA lexicon
     :param mpqa_path: the path of MPQA lexicon file
-    :return:
+    :return: a dictionary, {"strongsubj": [wordlist], "weaksubj": [wordlist]}
     """
     res = defaultdict(list)
     with open(mpqa_path, 'r') as file:
@@ -89,6 +89,12 @@ def split_instances(instances, split_file='saved_split'):
 
 
 def add_additional_features(instances, mpqa_lexicon):
+    """
+    extract additional features
+    :param instances: instances without additional features
+    :param mpqa_lexicon: the loaded mpqa lexicon (dictionary)
+    :return: instances with additional features
+    """
     nlp = spacy.load('en_core_web_sm')
     feat_dicts = []
     pbar = tqdm(total=len(instances))
@@ -137,7 +143,7 @@ def add_additional_features(instances, mpqa_lexicon):
         keys = sorted([key for key in instance.keys() if key.endswith("tweettext")])
         for index_inside, key in enumerate(keys):
             newfeatkey = key.split("_")[0] + "_addfeattensor"
-            feattensor = torch.FloatTensor(small_feats[index_inside]).to('cpu')
+            feattensor = torch.FloatTensor(small_feats[index_inside]).unsqueeze(0).to('cpu')
             instance[newfeatkey] = feattensor
 
     return instances
@@ -347,8 +353,15 @@ def get_final_feats(instance):
             instance['context12_bertoutput'],
             instance['context13_bertoutput'],
         ), dim=1)
-        if 'additional_feature' in instance.keys():
-            feat = torch.cat((feat, instance['additional_feature']), dim=1)
+        # check if additional features exist
+        if 'anchor_addfeattensor' in instance.keys():
+            feat = torch.cat((feat, instance['context8_addfeattensor']), dim=1)
+            feat = torch.cat((feat, instance['context9_addfeattensor']), dim=1)
+            feat = torch.cat((feat, instance['context10_addfeattensor']), dim=1)
+            feat = torch.cat((feat, instance['anchor_addfeattensor']), dim=1)
+            feat = torch.cat((feat, instance['context11_addfeattensor']), dim=1)
+            feat = torch.cat((feat, instance['context12_addfeattensor']), dim=1)
+            feat = torch.cat((feat, instance['context13_addfeattensor']), dim=1)
     return feat
 
 
