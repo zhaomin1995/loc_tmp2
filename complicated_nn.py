@@ -1,13 +1,25 @@
 import argparse
 import time
 import os
+import random
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import numpy as np
 from utils import preprocess
 from utils import learning_helper
 from utils import evaluator
 from sklearn.metrics import classification_report
+
+
+# control the source of randomness
+seed = 1234
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
+torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.deterministic = True
 
 
 # define some global parameters
@@ -22,6 +34,13 @@ def main(mode, model_type):
     # load data
     data_dir = 'data/annotations/new_annot.json'
     instances = preprocess.load_data(data_dir, mode)
+
+    # load MPQA lexicon
+    mpqa_path = os.path.join('data', 'reference', 'MPQA_Lexicon')
+    mpqa_lexicon = preprocess.load_mpqa(mpqa_path)
+
+    # extract additional feature
+    instances = preprocess.add_additional_features(instances, mpqa_lexicon)
 
     # add BERT output
     print("Extracting textual features using BERT ...")

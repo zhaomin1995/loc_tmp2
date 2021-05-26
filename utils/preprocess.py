@@ -1,10 +1,12 @@
+import os
 import json
 import random
+import spacy
 import torch
 import transformers as ppb
 import numpy as np
 import torchvision.models as models
-from collections import Counter
+from collections import Counter, defaultdict
 from PIL import Image
 from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
@@ -32,6 +34,21 @@ def load_data(data_dir, mode):
                 instance['tasktype'] = mode
                 instances.append(instance)
     return instances
+
+
+def load_mpqa(mpqa_path):
+    """
+    load MPQA lexicon
+    :param mpqa_path: the path of MPQA lexicon file
+    :return:
+    """
+    res = defaultdict(list)
+    with open(mpqa_path, 'r') as file:
+        lines = file.read().split("\n")[:-1]
+        for line in lines:
+            attributes = line.split(" ")
+            res[attributes[0].split("=")[1]].append(attributes[2].split("=")[1])
+    return res
 
 
 def split_instances(instances, split_file='saved_split'):
@@ -68,6 +85,42 @@ def split_instances(instances, split_file='saved_split'):
     random.shuffle(test_instances)
 
     return train_instances, dev_instances, test_instances
+
+
+def add_additional_features(instances, mpqa_lexicon):
+    nlp = spacy.load('en_core_web_sm')
+    for instance in instances:
+        for key in list(instance.keys()):
+            if key.endswith("tweettext"):
+                tweet = nlp(instance[key])
+                featkey = key.split("_")[0] + "_addfeat"
+                addfeat = {}
+
+                # entirely uppercase words
+                num_uppercasewords = len(['x' for token in tweet if token.text.isupper()])
+                addfeat['num_uppercasewords'] = num_uppercasewords
+
+                # the number of URLs
+                num_urls = len(['x' for token in tweet if token.text.startswith("http")])
+                addfeat['num_urls'] = num_urls
+
+                # the number of exclamation marks
+                num_exclamationmarks = len(['x' for token in tweet if token.text == '!'])
+                addfeat['num_exclamationmarks'] = num_exclamationmarks
+
+                # the number of strongly subjective words in MPQA lexicon
+                num_strongsubj = len([token for token in tweet if token.text in mpqa_lexicon['strongsubj']])
+                addfeat['num_strongsubj'] = num_strongsubj
+
+                # the number of weakly subjective words in MPQA lexicon
+                num_weaksubj = len([token for token in tweet if token.text in mpqa_lexicon['weaksubj']])
+                addfeat['num_weaksubj'] = num_weaksubj
+
+                #
+
+                instance[featkey] = addfeat
+
+    return instances
 
 
 def add_baseline_output(instances):
