@@ -39,8 +39,13 @@ def main(mode, model_type):
     mpqa_path = os.path.join('data', 'reference', 'MPQA_Lexicon')
     mpqa_lexicon = preprocess.load_mpqa(mpqa_path)
 
-    # extract additional feature
+    # extract additional features
+    print("Extracting additional features using SpaCy ...")
+    start_time = time.time()
     instances = preprocess.add_additional_features(instances, mpqa_lexicon)
+    end_time = time.time()
+    elapsed_mins, elapsed_secs = learning_helper.epoch_time(start_time, end_time)
+    print(f"Time spent for SpaCy preprocessing: {elapsed_mins}m {elapsed_secs}s")
 
     # add BERT output
     print("Extracting textual features using BERT ...")
@@ -48,7 +53,7 @@ def main(mode, model_type):
     instances = preprocess.add_bert_output(instances, anchor_only=False)
     end_time = time.time()
     elapsed_mins, elapsed_secs = learning_helper.epoch_time(start_time, end_time)
-    print(f"Time spent for BERT: {elapsed_mins}m {elapsed_secs}s")
+    print(f"Time spent for BERT preprocessing: {elapsed_mins}m {elapsed_secs}s")
 
     # split instances into train, dev, and test
     train_instances, dev_instances, test_instances = preprocess.split_instances(instances)
