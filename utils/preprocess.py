@@ -103,7 +103,6 @@ def add_additional_features(instances, mpqa_lexicon):
         keys = sorted([key for key in instance.keys() if key.endswith("tweettext")])
         for key in keys:
             tweet = nlp(instance[key])
-            #             print(tweet)
             featkey = key.split("_")[0] + "_addfeat"
             addfeat = {}
 
@@ -127,7 +126,19 @@ def add_additional_features(instances, mpqa_lexicon):
             num_weaksubj = len([token for token in tweet if token.text in mpqa_lexicon['weaksubj']])
             addfeat['num_weaksubj'] = num_weaksubj
 
-            #
+            # the number of emoji
+            num_emoji = len(tweet._.emoji)
+            addfeat['num_emoji'] = num_emoji
+
+            # the three most common emoji (in the form of description)
+            emoji_desc_lists = [token._.emoji_desc for token in tweet if token._.is_emoji]
+            emoji_count = Counter(emoji_desc_lists).most_common(3)
+            for index, x in enumerate(emoji_count):
+                addfeat[f"no.{index + 1}_emoji"] = x[0]
+
+            # the number of tokens
+            num_tokens = len(tweet)
+            addfeat['num_tokens'] = num_tokens
 
             instance[featkey] = addfeat
             feat_dicts.append(addfeat)
