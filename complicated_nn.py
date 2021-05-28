@@ -69,7 +69,8 @@ def main(mode, model_type):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # get the model based on mode and move model to GPU is GPU is available
-    classifier = learning_helper.get_model(mode)
+    additional_feat_dim = train_instances[0]['anchor_addfeattensor'].shape[1]
+    classifier = learning_helper.get_model(mode, additional_feat_dim=additional_feat_dim)
     classifier = classifier.to(device)
 
     if model_type == 'retrain':

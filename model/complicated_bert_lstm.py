@@ -20,14 +20,14 @@ class ComplicatedBertLSTM(nn.Module):
         self.output_dim = output_dim
         self.hidden_dim = hidden_dim
         self.dropout_rate = dropout_rate
-        self.lstm = nn.LSTM(self.bert_feat_dim, self.lstm_dim, batch_first=True, bidirectional=False)
+        self.lstm = nn.LSTM(self.bert_feat_dim, self.lstm_dim, batch_first=True, bidirectional=True)
         self.fc1 = nn.Linear(self.lstm_dim, hidden_dim)
         self.fc2 = nn.Linear(hidden_dim, output_dim)
         self.dropout = nn.Dropout(dropout_rate)
 
     def forward(self, feat_combined):
 
-        # split the combined feature
+        # get the bert output
         context1_feat = feat_combined[:, :self.bert_feat_dim * 1].unsqueeze(1)
         context2_feat = feat_combined[:, self.bert_feat_dim * 1:self.bert_feat_dim * 2].unsqueeze(1)
         context3_feat = feat_combined[:, self.bert_feat_dim * 2:self.bert_feat_dim * 3].unsqueeze(1)
@@ -35,6 +35,16 @@ class ComplicatedBertLSTM(nn.Module):
         context4_feat = feat_combined[:, self.bert_feat_dim * 4:self.bert_feat_dim * 5].unsqueeze(1)
         context5_feat = feat_combined[:, self.bert_feat_dim * 5:self.bert_feat_dim * 6].unsqueeze(1)
         context6_feat = feat_combined[:, self.bert_feat_dim * 6:self.bert_feat_dim * 7].unsqueeze(1)
+
+        # get the additional features
+        addfeat_dim = int((feat_combined.shape[0] - self.bert_feat_dim * 7) / 7)
+        context1_addfeat = feat_combined[:, self.bert_feat_dim * 7 + addfeat_dim * 0:self.bert_feat_dim * 7 + addfeat_dim * 1].unsqueeze(1)
+        context2_addfeat = feat_combined[:, self.bert_feat_dim * 7 + addfeat_dim * 1:self.bert_feat_dim * 7 + addfeat_dim * 2].unsqueeze(1)
+        context3_addfeat = feat_combined[:, self.bert_feat_dim * 7 + addfeat_dim * 2:self.bert_feat_dim * 7 + addfeat_dim * 3].unsqueeze(1)
+        anchor_addfeat = feat_combined[:, self.bert_feat_dim * 7 + addfeat_dim * 3:self.bert_feat_dim * 7 + addfeat_dim * 4].unsqueeze(1)
+        context4_addfeat = feat_combined[:, self.bert_feat_dim * 7 + addfeat_dim * 4:self.bert_feat_dim * 7 + addfeat_dim * 5].unsqueeze(1)
+        context5_addfeat = feat_combined[:, self.bert_feat_dim * 7 + addfeat_dim * 5:self.bert_feat_dim * 7 + addfeat_dim * 6].unsqueeze(1)
+        context6_addfeat = feat_combined[:, self.bert_feat_dim * 7 + addfeat_dim * 6:self.bert_feat_dim * 7 + addfeat_dim * 7].unsqueeze(1)
 
         # prepare for the input of LSTM
         lstm_input = torch.cat((

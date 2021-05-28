@@ -96,6 +96,7 @@ def add_additional_features(instances, mpqa_lexicon):
     :return: instances with additional features
     """
     nlp = spacy.load('en_core_web_sm')
+    nlp.add_pipe('emoji', first=True)
     feat_dicts = []
     pbar = tqdm(total=len(instances))
     for instance in instances:
