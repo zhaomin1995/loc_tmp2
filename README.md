@@ -1,3 +1,6 @@
+- create folder to save the predictions
+  - `mkdir predictions`
+
 - baseline
   - `python baseline.py`
     
