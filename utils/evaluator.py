@@ -45,10 +45,15 @@ def save_prediction(mode, pred_labels, test_instances, prediction_dir='predictio
     prediction_filepath = os.path.join(prediction_dir, prediction_filename)
     with open(prediction_filepath, 'w+') as pred_file:
         for index, instance in enumerate(test_instances):
-            # remove the bert_output and resnet_output
 
             for key in list(instance.keys()):
+
+                # remove the bert_output and resnet_output
                 if 'vggoutput' in key or 'bertoutput' in key:
+                    del instance[key]
+
+                # remove the context-related things
+                if 'addfeat' in key:
                     del instance[key]
 
             # add the predicted label
