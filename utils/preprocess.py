@@ -135,7 +135,7 @@ def add_additional_features(instances, mpqa_lexicon):
             emoji_desc_lists = [token._.emoji_desc for token in tweet if token._.is_emoji]
             emoji_count = Counter(emoji_desc_lists).most_common(3)
             for index, x in enumerate(emoji_count):
-                addfeat[f"no.{index + 1}_emoji"] = str(x[0])
+                addfeat[f"no.{index + 1}_emoji"] = x[0]
 
             # the number of tokens
             num_tokens = len(tweet)
