@@ -109,37 +109,37 @@ def add_additional_features(instances, mpqa_lexicon):
 
             # entirely uppercase words
             num_uppercasewords = len(['x' for token in tweet if token.text.isupper()])
-            addfeat['num_uppercasewords'] = num_uppercasewords
+            addfeat['num_uppercasewords'] = str(num_uppercasewords)
 
             # the number of URLs
             num_urls = len(['x' for token in tweet if token.text.startswith("http")])
-            addfeat['num_urls'] = num_urls
+            addfeat['num_urls'] = str(num_urls)
 
             # the number of exclamation marks
             num_exclamationmarks = len(['x' for token in tweet if token.text == '!'])
-            addfeat['num_exclamationmarks'] = num_exclamationmarks
+            addfeat['num_exclamationmarks'] = str(num_exclamationmarks)
 
             # the number of strongly subjective words in MPQA lexicon
             num_strongsubj = len([token for token in tweet if token.text in mpqa_lexicon['strongsubj']])
-            addfeat['num_strongsubj'] = num_strongsubj
+            addfeat['num_strongsubj'] = str(num_strongsubj)
 
             # the number of weakly subjective words in MPQA lexicon
             num_weaksubj = len([token for token in tweet if token.text in mpqa_lexicon['weaksubj']])
-            addfeat['num_weaksubj'] = num_weaksubj
+            addfeat['num_weaksubj'] = str(num_weaksubj)
 
             # the number of emoji
             num_emoji = len(tweet._.emoji)
-            addfeat['num_emoji'] = num_emoji
+            addfeat['num_emoji'] = str(num_emoji)
 
             # the three most common emoji (in the form of description)
             emoji_desc_lists = [token._.emoji_desc for token in tweet if token._.is_emoji]
             emoji_count = Counter(emoji_desc_lists).most_common(3)
             for index, x in enumerate(emoji_count):
-                addfeat[f"no.{index + 1}_emoji"] = x[0]
+                addfeat[f"no.{index + 1}_emoji"] = str(x[0])
 
             # the number of tokens
             num_tokens = len(tweet)
-            addfeat['num_tokens'] = num_tokens
+            addfeat['num_tokens'] = str(num_tokens)
 
             instance[featkey] = addfeat
             feat_dicts.append(addfeat)
