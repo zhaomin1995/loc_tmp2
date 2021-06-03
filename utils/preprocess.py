@@ -261,6 +261,9 @@ def add_bert_output(instances, anchor_only):
             pbar.update(1)
         pbar.close()
 
+    # clear cache to free GPU memory
+    torch.cuda.empty_cache()
+
     return instances
 
 
@@ -338,6 +341,9 @@ def add_vgg_output(instances, anchor_only):
 
         pbar.update(1)
     pbar.close()
+
+    # clear cache to free GPU memory
+    torch.cuda.empty_cache()
 
     return instances
 
