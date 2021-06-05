@@ -10,10 +10,10 @@ hidden_dim = 512
 dropout_rate = 0.5
 
 
-class BertLstmTest(nn.Module):
+class ComplicatedBertLSTM(nn.Module):
 
     def __init__(self, additional_feat_dim=0):
-        super(BertLstmTest, self).__init__()
+        super(ComplicatedBertLSTM, self).__init__()
         self.bert_feat_dim = bert_feat_dim
         self.additional_feat_dim = additional_feat_dim
         self.lstm_dim = lstm_dim
@@ -60,7 +60,7 @@ class BertLstmTest(nn.Module):
         # pass the LSTM
         lstm_output, _ = self.lstm(lstm_input)
 
-        # global maxpooling on the BiLSTM output
+        # global average pooling on the BiLSTM output
         lstm_output = nn.AvgPool1d(7, 7)(lstm_output.permute(0, 2, 1)).permute(0, 2, 1).squeeze(1)
 
         # pass the fully-connected layer(s)

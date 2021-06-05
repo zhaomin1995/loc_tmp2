@@ -3,7 +3,8 @@ from model.anchor_text_only import AnchorTextOnlyModel
 from model.anchor_image_only import AnchorImageOnlyModel
 from model.anchor_text_image import AnchorTextImageModel
 from model.complicated_bert_only import ComplicatedBertOnly
-from model.complicated_bert_lstm import ComplicatedBertLSTM
+# from model.complicated_bert_lstm import ComplicatedBertLSTM
+from model.complicated_bert_lstm_combined import ComplicatedBertLSTM
 
 
 def epoch_time(start_time, end_time):

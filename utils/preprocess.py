@@ -90,6 +90,11 @@ def split_instances(instances, split_file='saved_split'):
 
 
 def feat_polished(instances):
+    """
+    split the integer feature values into some bins and convert it into string
+    :param instances: instances with integer values
+    :return: instances with string values
+    """
     # get the statistics of the features whose value is integer
     feat_dicts = [value for instance in instances for key, value in instance.items() if key.endswith("addfeat")]
     keys = [key for key, value in feat_dicts[0].items() if isinstance(value, int)]
