@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import random
 import spacy
@@ -88,6 +89,37 @@ def split_instances(instances, split_file='saved_split'):
     return train_instances, dev_instances, test_instances
 
 
+def feat_polished(instances):
+    # get the statistics of the features whose value is integer
+    feat_dicts = [value for instance in instances for key, value in instance.items() if key.endswith("addfeat")]
+    keys = [key for key, value in feat_dicts[0].items() if isinstance(value, int)]
+    feat_numbers = {key: [feat_dict[key] for feat_dict in feat_dicts] for key in keys}
+    cutted_dict = defaultdict(dict)
+    for key, value in feat_numbers.items():
+        stats = Counter(value)
+        # only get the most common value
+        most_common = dict(stats.most_common(int(len(stats) / 6) + 1))
+        for small_key in most_common.keys():
+            cutted_dict[key].update({small_key: str(small_key)})
+        cutted_dict[key].update({'other': 'other'})
+
+    # update the feature value
+    for instance in instances:
+        keys = [key for key in instance.keys() if key.endswith("addfeat")]
+        for key in keys:
+            feat_values = instance[key]
+            for feat_name in list(feat_values.keys()):
+                feat_value = feat_values[feat_name]
+                if not isinstance(feat_value, int):
+                    continue
+                if feat_value in cutted_dict.keys():
+                    instance[key][feat_name] = cutted_dict[feat_name][feat_value]
+                else:
+                    instance[key][feat_name] = cutted_dict[feat_name]['other']
+
+    return instances
+
+
 def add_additional_features(instances, mpqa_lexicon):
     """
     extract additional features
@@ -97,39 +129,39 @@ def add_additional_features(instances, mpqa_lexicon):
     """
     nlp = spacy.load('en_core_web_sm')
     nlp.add_pipe('emoji', first=True)
-    feat_dicts = []
     pbar = tqdm(total=len(instances))
     for instance in instances:
         # ensure the order is the same as in the later part
         keys = sorted([key for key in instance.keys() if key.endswith("tweettext")])
+        location = instance['anchor_location']
         for key in keys:
             tweet = nlp(instance[key])
             featkey = key.split("_")[0] + "_addfeat"
             addfeat = {}
 
             # entirely uppercase words
-            num_uppercasewords = len(['x' for token in tweet if token.text.isupper()])
-            addfeat['num_uppercasewords'] = str(num_uppercasewords)
+            num_entireuppercasewords = len(['x' for token in tweet if token.text.isupper()])
+            addfeat['num_entireuppercasewords'] = num_entireuppercasewords
 
             # the number of URLs
             num_urls = len(['x' for token in tweet if token.text.startswith("http")])
-            addfeat['num_urls'] = str(num_urls)
+            addfeat['num_urls'] = num_urls
 
             # the number of exclamation marks
             num_exclamationmarks = len(['x' for token in tweet if token.text == '!'])
-            addfeat['num_exclamationmarks'] = str(num_exclamationmarks)
+            addfeat['num_exclamationmarks'] = num_exclamationmarks
 
             # the number of strongly subjective words in MPQA lexicon
             num_strongsubj = len([token for token in tweet if token.text in mpqa_lexicon['strongsubj']])
-            addfeat['num_strongsubj'] = str(num_strongsubj)
+            addfeat['num_strongsubj'] = num_strongsubj
 
             # the number of weakly subjective words in MPQA lexicon
             num_weaksubj = len([token for token in tweet if token.text in mpqa_lexicon['weaksubj']])
-            addfeat['num_weaksubj'] = str(num_weaksubj)
+            addfeat['num_weaksubj'] = num_weaksubj
 
             # the number of emoji
             num_emoji = len(tweet._.emoji)
-            addfeat['num_emoji'] = str(num_emoji)
+            addfeat['num_emoji'] = num_emoji
 
             # the three most common emoji (in the form of description)
             emoji_desc_lists = [token._.emoji_desc for token in tweet if token._.is_emoji]
@@ -139,16 +171,54 @@ def add_additional_features(instances, mpqa_lexicon):
 
             # the number of tokens
             num_tokens = len(tweet)
-            addfeat['num_tokens'] = str(num_tokens)
+            addfeat['num_tokens'] = num_tokens
+
+            # the number of elongated words
+            elong_pattern = re.compile("([a-zA-Z])\\1{2,}")
+            num_elong = len(['x' for token in tweet if bool(elong_pattern.search(token.text))])
+            addfeat['num_elong'] = num_elong
+
+            # the number of hashtags
+            num_hashtags = len(['x' for token in tweet if token.text.startswith("#")])
+            addfeat['num_hashtags'] = num_hashtags
+
+            # the number of first letter uppercased words
+            num_uppercasewords = len(['x' for token in tweet if token.text[0].isupper()])
+            addfeat['num_uppercasewords'] = num_uppercasewords
+
+            # the surround words/lemma/pos/hashtag/reply
+            contain_location = False
+            for token in tweet:
+                if location in token.text:
+                    contain_location = True
+
+                    # check if the location is included in a hashtag
+                    addfeat['loc_hashtag'] = '1' if token.text.startswith("#") else '0'
+
+                    # check if the location is included in a mention
+                    addfeat['loc_mention'] = '1' if token.text.startswith("@") else '0'
+                    break
+            if not contain_location:
+                addfeat['loc_hashtag'] = '0'
+                addfeat['loc_mention'] = '0'
 
             instance[featkey] = addfeat
-            feat_dicts.append(addfeat)
         pbar.update(1)
     pbar.close()
 
+    # modify the feature value
+    instances = feat_polished(instances)
+
+    # convert the dict to tensor to learn the model
+    feat_dicts = []
+    for instance in instances:
+        # ensure the order is the same as in the later part
+        keys = sorted([key for key in instance.keys() if key.endswith("tweettext")])
+        for key in keys:
+            featkey = key.split("_")[0] + "_addfeat"
+            feat_dicts.append(instance[featkey])
     dv = DictVectorizer(sparse=False)
     feat_vectorized = dv.fit_transform(feat_dicts)
-
     for index_outside, instance in enumerate(instances):
         small_feats = feat_vectorized[index_outside * 7:(index_outside + 1) * 7]
         # ensure the order is the same as the previous part
