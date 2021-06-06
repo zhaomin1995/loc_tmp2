@@ -149,7 +149,7 @@ def add_additional_features(instances, mpqa_lexicon):
             addfeat['num_entireuppercasewords'] = num_entireuppercasewords
 
             # the number of URLs
-            num_urls = len(['x' for token in tweet if token.text.startswith("http")])
+            num_urls = len(['x' for token in tweet if token.like_url])
             addfeat['num_urls'] = num_urls
 
             # the number of exclamation marks
