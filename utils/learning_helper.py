@@ -3,6 +3,7 @@ from model.anchor_text_only import AnchorTextOnlyModel
 from model.anchor_image_only import AnchorImageOnlyModel
 from model.anchor_text_image import AnchorTextImageModel
 from model.complicated_bert_lstm_combined import ComplicatedBertLSTM
+from model.complicated_onlybefore import ComplicatedOnlyBefore
 
 
 def epoch_time(start_time, end_time):
@@ -33,6 +34,8 @@ def get_model(mode, additional_feat_dim=0):
         model = AnchorTextImageModel()
     if mode == 'all_bert_lstm':
         model = ComplicatedBertLSTM(additional_feat_dim=additional_feat_dim)
+    if mode == 'all_bert_lstm_onlybefore':
+        model = ComplicatedOnlyBefore(additional_feat_dim=additional_feat_dim)
     return model
 
 
