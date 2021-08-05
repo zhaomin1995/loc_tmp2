@@ -436,7 +436,7 @@ def get_final_feats(instance):
         feat = instance['anchor_vggoutput']
     if task_type == 'anchor_text_image':
         feat = torch.cat((instance['anchor_bertoutput'], instance['anchor_vggoutput']), dim=1)
-    if task_type in ['all_bert_only', 'all_bert_lstm', 'all_bert_lstm_combined']:
+    if task_type in ['all_bert_only', 'all_bert_lstm', 'all_bert_lstm_onlybefore', 'all_bert_lstm_onlyafter']:
         feat = torch.cat((
             instance['context8_bertoutput'],
             instance['context9_bertoutput'],
