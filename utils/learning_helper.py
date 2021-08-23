@@ -33,7 +33,7 @@ def get_model(mode, additional_feat_dim=0):
         model = AnchorImageOnlyModel()
     if mode == 'anchor_text_image':
         model = AnchorTextImageModel()
-    if mode == 'all_bert_lstm':
+    if mode == 'all_bert_lstm' or mode == 'all_bert_lstm_noaddfeat':
         model = ComplicatedBertLSTM(additional_feat_dim=additional_feat_dim)
     if mode == 'all_bert_lstm_onlybefore':
         model = ComplicatedOnlyBefore(additional_feat_dim=additional_feat_dim)

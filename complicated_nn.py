@@ -40,12 +40,13 @@ def main(mode, model_type):
     mpqa_lexicon = preprocess.load_mpqa(mpqa_path)
 
     # extract additional features
-    print("Extracting additional features using SpaCy ...")
-    start_time = time.time()
-    instances = preprocess.add_additional_features(instances, mpqa_lexicon)
-    end_time = time.time()
-    elapsed_mins, elapsed_secs = learning_helper.epoch_time(start_time, end_time)
-    print(f"Time spent for SpaCy preprocessing: {elapsed_mins}m {elapsed_secs}s")
+    if mode != 'all_bert_lstm_noaddfeat':
+        print("Extracting additional features using SpaCy ...")
+        start_time = time.time()
+        instances = preprocess.add_additional_features(instances, mpqa_lexicon)
+        end_time = time.time()
+        elapsed_mins, elapsed_secs = learning_helper.epoch_time(start_time, end_time)
+        print(f"Time spent for SpaCy preprocessing: {elapsed_mins}m {elapsed_secs}s")
 
     # add BERT output
     print("Extracting textual features using BERT ...")
@@ -69,7 +70,10 @@ def main(mode, model_type):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # get the model based on mode and move model to GPU is GPU is available
-    additional_feat_dim = train_instances[0]['anchor_addfeattensor'].shape[1]
+    if mode != 'all_bert_lstm_noaddfeat':
+        additional_feat_dim = train_instances[0]['anchor_addfeattensor'].shape[1]
+    else:
+        additional_feat_dim = 0
     classifier = learning_helper.get_model(mode, additional_feat_dim=additional_feat_dim)
     classifier = classifier.to(device)
 
