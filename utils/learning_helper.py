@@ -1,5 +1,6 @@
 import torch
 from model.anchor_text_only import AnchorTextOnlyModel
+from model.anchor_text_only_addfeat import AnchorTextOnlyAddfeatModel
 from model.anchor_image_only import AnchorImageOnlyModel
 from model.anchor_text_image import AnchorTextImageModel
 from model.complicated_bert_lstm_combined import ComplicatedBertLSTM
@@ -29,6 +30,8 @@ def get_model(mode, additional_feat_dim=0):
     """
     if mode == 'anchor_text_only':
         model = AnchorTextOnlyModel()
+    if mode == 'anchor_text_only_addfeat':
+        model = AnchorTextOnlyAddfeatModel(additional_feat_dim=additional_feat_dim)
     if mode == 'anchor_image_only':
         model = AnchorImageOnlyModel()
     if mode == 'anchor_text_image':

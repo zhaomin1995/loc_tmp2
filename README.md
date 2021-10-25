@@ -7,6 +7,8 @@
 - Neural network only using anchor tweet (neural network baselines)
   - only use text
     - `python anchor_only.py -mode anchor_text_only -model_type pretrained`
+  - only use text & additional features
+    - `python anchor_only.py -mode anchor_text_only_addfeat -model_type pretrained`
   - only use image
     - `python anchor_only.py -mode anchor_image_only -model_type pretrained`
   - use text & image

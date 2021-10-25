@@ -432,6 +432,11 @@ def get_final_feats(instance):
     task_type = instance['tasktype']
     if task_type == 'anchor_text_only':
         feat = instance['anchor_bertoutput']
+    if task_type == 'anchor_text_only_addfeat':
+        feat = torch.cat((
+            instance['anchor_bertoutput'],
+            instance['anchor_addfeattensor'],
+        ), dim=1)
     if task_type == 'anchor_image_only':
         feat = instance['anchor_vggoutput']
     if task_type == 'anchor_text_image':

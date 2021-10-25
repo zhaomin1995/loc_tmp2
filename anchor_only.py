@@ -24,7 +24,7 @@ def main(mode, model_type):
     instances = preprocess.load_data(data_dir, mode)
 
     # add BERT output and/or VGG output
-    if mode == 'anchor_text_only' or mode == 'anchor_text_image':
+    if mode == 'anchor_text_only' or mode == 'anchor_text_image' or mode == 'anchor_text_only_addfeat':
         print("Extracting textual features using BERT ...")
         start_time = time.time()
         instances = preprocess.add_bert_output(instances, anchor_only=True)
@@ -38,6 +38,20 @@ def main(mode, model_type):
         end_time = time.time()
         elapsed_mins, elapsed_secs = learning_helper.epoch_time(start_time, end_time)
         print(f"Time spent for VGG: {elapsed_mins}m {elapsed_secs}s")
+
+    # add additional feature
+    if mode == 'anchor_text_only_addfeat':
+
+        # load MPQA lexicon
+        mpqa_path = os.path.join('data', 'reference', 'MPQA_Lexicon')
+        mpqa_lexicon = preprocess.load_mpqa(mpqa_path)
+
+        print("Extracting additional features using SpaCy ...")
+        start_time = time.time()
+        instances = preprocess.add_additional_features(instances, mpqa_lexicon)
+        end_time = time.time()
+        elapsed_mins, elapsed_secs = learning_helper.epoch_time(start_time, end_time)
+        print(f"Time spent for spaCy preprocessing: {elapsed_mins}m {elapsed_secs}s")
 
     # split instances into train, dev, and test
     train_instances, dev_instances, test_instances = preprocess.split_instances(instances)
@@ -53,7 +67,11 @@ def main(mode, model_type):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # get the model based on mode and move model to GPU is GPU is available
-    classifier = learning_helper.get_model(mode)
+    if mode == 'anchor_text_only_addfeat':
+        additional_feat_dim = train_instances[0]['anchor_addfeattensor'].shape[1]
+    else:
+        additional_feat_dim = 0
+    classifier = learning_helper.get_model(mode, additional_feat_dim=additional_feat_dim)
     classifier = classifier.to(device)
 
     if model_type == 'retrain':
