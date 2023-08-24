@@ -5,8 +5,7 @@ import os
 from pathlib import Path
 from utils.data import load_data, get_prompt
 from utils.learning import get_train_args, get_peft_config
-from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments
-from peft import LoraConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from datasets import Dataset
 from trl import SFTTrainer
 from tqdm import tqdm
@@ -46,11 +45,12 @@ def main(
     )
 
     # Step 2: Construct the training prompts and test prompts
-    train_prompts = Dataset.from_dict({
+    train_samples = Dataset.from_dict({
         'text': [get_prompt(instance, input_content, 'train') for instance in train_data]
     })
-    test_prompts = Dataset.from_dict({
-        'text': [get_prompt(instance, input_content, 'train') for instance in test_data]
+    test_samples = Dataset.from_dict({
+        'text': [get_prompt(instance, input_content, 'train') for instance in test_data],
+        'label': [instance['adjudicated_label'] for instance in test_data]
     })
 
     # Step 3: Define the training arguments
@@ -66,7 +66,7 @@ def main(
     trainer = SFTTrainer(
         model=model,
         args=training_args,
-        train_dataset=train_prompts,
+        train_dataset=train_samples,
         dataset_text_field="text",
         max_seq_length=4096,
         peft_config=peft_config,
@@ -93,37 +93,37 @@ def main(
     #                Inference                 #
     ############################################
 
-    # batch_size = 16
-    # tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf", padding_size="left")
-    # tokenizer.pad_token = tokenizer.eos_token
-    # pbar = tqdm(total=len(test_examples))
-    # predictions, references = [], []
-    # with torch.inference_mode():
-    #     for start in range(0, len(test_examples), batch_size):
-    #         end = min(start + batch_size, len(test_examples))
-    #         texts = [sample for sample in test_dataset['text'][start: end]]
-    #         input_ids = tokenizer(texts, return_tensors='pt', padding=True).to('cuda')
-    #         output_tokens = model.generate(**input_ids, max_new_tokens=50, do_sample=False, use_cache=True)
-    #         for ele in output_tokens:
-    #             decoded_output = tokenizer.decode(ele, skip_special_tokens=True)
-    #             predictions.append(decoded_output)
-    #         for text, label in zip(test_dataset['text'][start: end], test_dataset['label'][start: end]):
-    #             reference = text + label
-    #             references.append(reference)
-    #         pbar.update(end - start)
-    # pbar.close()
-    #
-    # # save the predictions and references
-    # response_folder = 'responses'
-    # Path(response_folder).mkdir(parents=True, exist_ok=True)
-    # output_filename = f"{experiment}_response"
-    # output_filepath = os.path.join(response_folder, output_filename)
-    # output = {
-    #     'predictions': predictions,
-    #     'references': references
-    # }
-    # with open(output_filepath, 'w') as file:
-    #     json.dump(output, file)
+    batch_size = 16
+    tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf", padding_size="left")
+    tokenizer.pad_token = tokenizer.eos_token
+    pbar = tqdm(total=len(test_data))
+    predictions, references = [], []
+    with torch.inference_mode():
+        for start in range(0, len(test_data), batch_size):
+            end = min(start + batch_size, len(test_data))
+            texts = [sample for sample in test_samples['text'][start: end]]
+            input_ids = tokenizer(texts, return_tensors='pt', padding=True).to('cuda')
+            output_tokens = model.generate(**input_ids, max_new_tokens=50, do_sample=False, use_cache=True)
+            for ele in output_tokens:
+                decoded_output = tokenizer.decode(ele, skip_special_tokens=True)
+                predictions.append(decoded_output)
+            for text, label in zip(test_samples['text'][start: end], test_samples['label'][start: end]):
+                reference = text + label
+                references.append(reference)
+            pbar.update(end - start)
+    pbar.close()
+
+    # save the predictions and references
+    response_folder = 'responses'
+    Path(response_folder).mkdir(parents=True, exist_ok=True)
+    output_filename = f"{experiment}_response"
+    output_filepath = os.path.join(response_folder, output_filename)
+    output = {
+        'predictions': predictions,
+        'references': references
+    }
+    with open(output_filepath, 'w') as file:
+        json.dump(output, file)
 
 
 if __name__ == '__main__':
