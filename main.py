@@ -4,7 +4,7 @@ import torch
 import os
 from pathlib import Path
 from utils.data import load_data, get_prompt
-from utils.learning import get_train_args, get_peft_config
+from utils.learning import get_train_args, get_peft_config, get_model_name
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from datasets import Dataset
 from trl import SFTTrainer
@@ -38,8 +38,9 @@ def main(
     ############################################
 
     # Step 1: Load the model
+    model_name = get_model_name(experiment)
     model = AutoModelForCausalLM.from_pretrained(
-        "meta-llama/Llama-2-7b-hf",
+        model_name,
         load_in_8bit=True,  # if we have enough GPU memory, we can set load_in_8bit as False
         device_map="auto"
     )
@@ -50,7 +51,7 @@ def main(
     })
     test_samples = Dataset.from_dict({
         'text': [get_prompt(instance, input_content, 'train') for instance in test_data],
-        'label': [instance['adjudicated_label'] for instance in test_data]
+        'label': [instance['label'] for instance in test_data]
     })
 
     # Step 3: Define the training arguments
@@ -72,58 +73,58 @@ def main(
         peft_config=peft_config,
     )
 
-    # Start fine-tuning!
-    trainer.train()
-
-    # save the fine-tuned adapter
-    adapter_folder = os.path.join(output_dir, adapter_foldername)
-    Path(adapter_folder).mkdir(parents=True, exist_ok=True)
-    adapter_path = os.path.join(adapter_folder, f"{experiment}_adapter")
-    trainer.save_model(adapter_path)
-
-    # save the loss of each step
-    loss_folder = os.path.join(output_dir, loss_foldername)
-    Path(loss_folder).mkdir(parents=True, exist_ok=True)
-    loss_log_filename = f"loss_{experiment}"
-    loss_log_filepath = os.path.join(loss_folder, loss_log_filename)
-    with open(loss_log_filepath, 'w') as file:
-        json.dump(trainer.state.log_history, file)
+    # # Start fine-tuning!
+    # trainer.train()
+    #
+    # # save the fine-tuned adapter
+    # adapter_folder = os.path.join(output_dir, adapter_foldername)
+    # Path(adapter_folder).mkdir(parents=True, exist_ok=True)
+    # adapter_path = os.path.join(adapter_folder, f"{experiment}_adapter")
+    # trainer.save_model(adapter_path)
+    #
+    # # save the loss of each step
+    # loss_folder = os.path.join(output_dir, loss_foldername)
+    # Path(loss_folder).mkdir(parents=True, exist_ok=True)
+    # loss_log_filename = f"loss_{experiment}"
+    # loss_log_filepath = os.path.join(loss_folder, loss_log_filename)
+    # with open(loss_log_filepath, 'w') as file:
+    #     json.dump(trainer.state.log_history, file)
 
     ############################################
     #                Inference                 #
     ############################################
 
-    batch_size = 16
-    tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf", padding_size="left")
-    tokenizer.pad_token = tokenizer.eos_token
-    pbar = tqdm(total=len(test_data))
-    predictions, references = [], []
-    with torch.inference_mode():
-        for start in range(0, len(test_data), batch_size):
-            end = min(start + batch_size, len(test_data))
-            texts = [sample for sample in test_samples['text'][start: end]]
-            input_ids = tokenizer(texts, return_tensors='pt', padding=True).to('cuda')
-            output_tokens = model.generate(**input_ids, max_new_tokens=50, do_sample=False, use_cache=True)
-            for ele in output_tokens:
-                decoded_output = tokenizer.decode(ele, skip_special_tokens=True)
-                predictions.append(decoded_output)
-            for text, label in zip(test_samples['text'][start: end], test_samples['label'][start: end]):
-                reference = text + label
-                references.append(reference)
-            pbar.update(end - start)
-    pbar.close()
-
-    # save the predictions and references
-    response_folder = 'responses'
-    Path(response_folder).mkdir(parents=True, exist_ok=True)
-    output_filename = f"{experiment}_response"
-    output_filepath = os.path.join(response_folder, output_filename)
-    output = {
-        'predictions': predictions,
-        'references': references
-    }
-    with open(output_filepath, 'w') as file:
-        json.dump(output, file)
+    # batch_size = 16
+    # tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf", padding_size="left")
+    # tokenizer.pad_token = tokenizer.eos_token
+    # pbar = tqdm(total=len(test_data))
+    # predictions, references = [], []
+    # with torch.inference_mode():
+    #     for start in range(0, len(test_data), batch_size):
+    #         end = min(start + batch_size, len(test_data))
+    #         texts = [sample for sample in test_samples['text'][start: end]]
+    #         input_ids = tokenizer(texts, return_tensors='pt', padding=True).to('cuda')
+    #         output_tokens = model.generate(**input_ids, max_new_tokens=50, do_sample=False, use_cache=True)
+    #         for ele in output_tokens:
+    #             decoded_output = tokenizer.decode(ele, skip_special_tokens=True)
+    #             predictions.append(decoded_output)
+    #         for text, label in zip(test_samples['text'][start: end], test_samples['label'][start: end]):
+    #             reference = text + label
+    #             references.append(reference)
+    #         pbar.update(end - start)
+    # pbar.close()
+    #
+    # # save the predictions and references
+    # response_folder = 'responses'
+    # Path(response_folder).mkdir(parents=True, exist_ok=True)
+    # output_filename = f"{experiment}_response"
+    # output_filepath = os.path.join(response_folder, output_filename)
+    # output = {
+    #     'predictions': predictions,
+    #     'references': references
+    # }
+    # with open(output_filepath, 'w') as file:
+    #     json.dump(output, file)
 
 
 if __name__ == '__main__':

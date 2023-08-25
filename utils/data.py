@@ -25,6 +25,8 @@ def load_data(data_filepath, split_filepath):
 
     with open(data_filepath, 'r') as file:
         for line in file:
+            if len(line) == 0:
+                continue
             item = json.loads(line)
             kept_annotations = [item[key] for key in item.keys() if key.startswith("Answer.Q1_")]
             if len(kept_annotations) == 0:

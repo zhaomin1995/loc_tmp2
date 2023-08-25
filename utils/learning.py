@@ -17,7 +17,33 @@ def get_train_args(output_dir):
     return training_args
 
 
-def get_peft_config():
-    peft_config = LoraConfig(lora_alpha=16, lora_dropout=0.1, r=8, task_type="CAUSAL_LM")
+def get_peft_config(peft_name='lora'):
+    if peft_name == 'lora':
+        peft_config = LoraConfig(lora_alpha=16, lora_dropout=0.1, r=8, task_type="CAUSAL_LM")
+    elif peft_name == 'prefix-tuning':
+        pass  # this is on the research agenda
+    elif peft_name == 'prompt-tuning':
+        pass  # this is on the research agenda
+    else:
+        raise ValueError("Please check the name of peft method")
     return peft_config
 
+
+def get_model_name(experiment):
+    if experiment == 'flan_ul2':
+        model_name = 'google/flan-ul2'
+    elif experiment == 'flan_t5':
+        model_name = 'google/flan-t5-large'
+    elif experiment == 'ul2':
+        model_name = 'google/ul2'
+    elif experiment == 't5':
+        model_name = 't5-large'
+    # elif experiment == 'ul2':
+    #     model_name = 'google/ul2'
+    # elif experiment == 'ul2':
+    #     model_name = 'google/ul2'
+    # elif experiment == 'ul2':
+    #     model_name = 'google/ul2'
+    else:
+        raise ValueError("Please check the name of the experiment")
+    return model_name
