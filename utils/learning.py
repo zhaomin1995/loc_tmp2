@@ -1,4 +1,10 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments
+from transformers import (
+    T5Tokenizer,
+    T5ForConditionalGeneration,
+    AutoTokenizer,
+    AutoModelForSeq2SeqLM,
+    TrainingArguments
+)
 from peft import LoraConfig
 
 
@@ -29,15 +35,27 @@ def get_peft_config(peft_name='lora'):
     return peft_config
 
 
-def get_model_name(experiment):
+def get_model_and_tokenizer(experiment):
     if experiment == 'flan_ul2':
-        model_name = 'google/flan-ul2'
+        tokenizer = AutoTokenizer.from_pretrained('google/flan-ul2')
+        model = AutoModelForSeq2SeqLM.from_pretrained(
+            'google/flan-ul2',
+            load_in_8bit=True,  # if we have enough GPU memory, we can set load_in_8bit as False
+            device_map="auto"
+        )
     elif experiment == 'flan_t5':
-        model_name = 'google/flan-t5-large'
+        tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-large")
+        model = T5ForConditionalGeneration.from_pretrained(
+            "google/flan-t5-large",
+            device_map="auto",
+            load_in_8bit=True
+        )
     elif experiment == 'ul2':
-        model_name = 'google/ul2'
+        tokenizer = AutoTokenizer.from_pretrained("google/ul2")
+        model = AutoModelForSeq2SeqLM.from_pretrained("google/ul2")
     elif experiment == 't5':
-        model_name = 't5-large'
+        tokenizer = AutoTokenizer.from_pretrained("t5-large")
+        model = AutoModelForSeq2SeqLM.from_pretrained("t5-large")
     # elif experiment == 'ul2':
     #     model_name = 'google/ul2'
     # elif experiment == 'ul2':
@@ -46,4 +64,4 @@ def get_model_name(experiment):
     #     model_name = 'google/ul2'
     else:
         raise ValueError("Please check the name of the experiment")
-    return model_name
+    return tokenizer, model
