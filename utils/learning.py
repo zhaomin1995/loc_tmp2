@@ -46,7 +46,7 @@ def get_model_and_tokenizer(experiment):
     elif experiment == 'flan_t5':
         tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-large")
         model = T5ForConditionalGeneration.from_pretrained(
-            "google/flan-t5-large",
+            "google/flan-t5-xxl",
             device_map="auto",
             load_in_8bit=True
         )

@@ -61,6 +61,8 @@ def combine_texts(texts, input_content):
         return '\n'.join(texts[4:])
     elif input_content == 'all':
         return '\n'.join(texts)
+    else:
+        raise ValueError("Please check the input content")
 
 
 def format_prompt(prompt, label, data_type):
