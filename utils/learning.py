@@ -52,10 +52,18 @@ def get_model_and_tokenizer(experiment):
         )
     elif experiment == 'ul2':
         tokenizer = AutoTokenizer.from_pretrained("google/ul2")
-        model = AutoModelForSeq2SeqLM.from_pretrained("google/ul2")
+        model = AutoModelForSeq2SeqLM.from_pretrained(
+            "google/ul2",
+            load_in_8bit=True,
+            device_map="auto"
+        )
     elif experiment == 't5':
-        tokenizer = AutoTokenizer.from_pretrained("t5-large")
-        model = AutoModelForSeq2SeqLM.from_pretrained("t5-large")
+        tokenizer = AutoTokenizer.from_pretrained("google/t5-v1_1-xxl")
+        model = AutoModelForSeq2SeqLM.from_pretrained(
+            "google/t5-v1_1-xxl",
+            load_in_8bit=True,
+            device_map="auto"
+        )
     # elif experiment == 'ul2':
     #     model_name = 'google/ul2'
     # elif experiment == 'ul2':
