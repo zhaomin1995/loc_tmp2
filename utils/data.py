@@ -2,13 +2,6 @@ import json
 import re
 
 
-INSTRUCTION = (
-    "Read the tweets and determine  "
-    "Negative discussions tend to cause the decrease in undergraduate enrollment of the next year. "
-    "Positive discussions tend to cause the increase in undergraduate enrollment of the next year."
-)
-
-
 def clean_text(text):
     text = re.sub(r'http\S+', '', text)
     text = text.strip()
@@ -58,7 +51,7 @@ def combine_texts(texts, input_content):
     elif input_content == 'early_target':
         return '\n'.join(texts[:4])
     elif input_content == 'target_later':
-        return '\n'.join(texts[4:])
+        return '\n'.join(texts[3:])
     elif input_content == 'all':
         return '\n'.join(texts)
     else:
