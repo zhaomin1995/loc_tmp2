@@ -82,10 +82,10 @@ def get_prompt(instance, input_content, data_type):
     label = instance['label']
     location = instance['location']
     prompt = (
-        f"Read the tweets and determine if the author of the tweet is located at {location} when the tweet was published. "
+        f"Read the tweets and determine if the author of the tweet is located in {location} when the tweet was published. "
         "Please only select the number listed below.\n\n"
         f"{tweet_text}\n\n"
-        "OPTIONS:\n1. Yes\n2. I cannot determine if the author of the tweet is located at {location} when the tweet was published.\n"
+        "OPTIONS:\n1. Yes\n2. I cannot determine if the author of the tweet is located in {location} when the tweet was published.\n"
         "ANSWER: "
     )
     prompt = format_prompt(prompt, label, data_type)
