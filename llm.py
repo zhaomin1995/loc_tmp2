@@ -45,7 +45,7 @@ def main(
         'text': [get_prompt(instance, input_content, 'train') for instance in train_data]
     })
     test_samples = Dataset.from_dict({
-        'text': [get_prompt(instance, input_content, 'train') for instance in test_data],
+        'text': [get_prompt(instance, input_content, 'test') for instance in test_data],
         'label': [instance['label'] for instance in test_data]
     })
 
