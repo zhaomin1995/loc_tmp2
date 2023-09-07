@@ -5,9 +5,9 @@ import os
 from pathlib import Path
 from utils.data import load_data, get_prompt
 from utils.learning import get_train_args, get_peft_config, get_model_and_tokenizer
+from utils.evaluation import inference
 from datasets import Dataset
 from trl import SFTTrainer
-from tqdm import tqdm
 from transformers import logging as hf_logging
 
 
@@ -19,11 +19,15 @@ def main(
         experiment,
         output_dir,
         input_content,
+        cache_dir,
         checkpoint_foldername='checkpoints',
         adapter_foldername='saved_adapters',
         loss_foldername='loss',
         response_foldername='responses',
 ):
+
+    if cache_dir is not None:
+        os.environ['TRANSFORMERS_CACHE'] = cache_dir
 
     ############################################
     #           Load and split data            #
@@ -49,7 +53,7 @@ def main(
         'label': [instance['label'] for instance in test_data]
     })
 
-    if '+' in experiment:  # few-shot learning
+    if '+' in experiment:  # instruction finetuning
 
         # Define the training arguments
         checkpoint_folder = os.path.join(output_dir, checkpoint_foldername)
@@ -91,23 +95,7 @@ def main(
     #                Inference                 #
     ############################################
 
-    batch_size = 16
-    tokenizer.pad_token = tokenizer.eos_token
-    pbar = tqdm(total=len(test_data), desc='Evaluating  ')
-    predictions, labels, reference_texts = [], [], []
-    with torch.inference_mode():
-        for start in range(0, len(test_data), batch_size):
-            end = min(start + batch_size, len(test_data))
-            texts = [sample for sample in test_samples['text'][start: end]]
-            input_ids = tokenizer(texts, return_tensors='pt', padding=True).to(model.device)
-            output_tokens = model.generate(**input_ids, max_new_tokens=50, do_sample=False, use_cache=True)
-            for ele in output_tokens:
-                decoded_output = tokenizer.decode(ele, skip_special_tokens=True)
-                predictions.append(decoded_output)
-            for label in test_samples['label'][start: end]:
-                labels.append(label)
-            pbar.update(end - start)
-    pbar.close()
+    predictions, labels = inference(model, tokenizer, test_samples)
 
     # save the predictions and references
     response_folder = os.path.join(output_dir, response_foldername)
@@ -135,6 +123,8 @@ if __name__ == '__main__':
                         help='Which part of the Twitter stream you want to use')
     parser.add_argument('-output_dir', '--output_dir',
                         help='The name of the output directory.')
+    parser.add_argument('-cache_dir', '--cache_dir',
+                        help='The path to the huggingface cache dir.')
     args = parser.parse_args()
 
     main(
@@ -142,4 +132,5 @@ if __name__ == '__main__':
         experiment=args.experiment,
         output_dir=args.output_dir,
         input_content=args.input_content,
+        cache_dir=args.cache_dir,
     )

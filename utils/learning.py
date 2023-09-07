@@ -1,4 +1,5 @@
 from transformers import (
+    BertModel,
     T5Tokenizer,
     T5ForConditionalGeneration,
     AutoTokenizer,
@@ -64,12 +65,16 @@ def get_model_and_tokenizer(experiment):
             load_in_8bit=True,
             device_map="auto"
         )
-    # elif experiment == 'ul2':
-    #     model_name = 'google/ul2'
-    # elif experiment == 'ul2':
-    #     model_name = 'google/ul2'
-    # elif experiment == 'ul2':
-    #     model_name = 'google/ul2'
+    elif experiment == 'alpaca':
+        tokenizer = AutoTokenizer.from_pretrained("declare-lab/flan-alpaca-xxl")
+        model = AutoModelForSeq2SeqLM.from_pretrained(
+            "declare-lab/flan-alpaca-xxl",
+            load_in_8bit=True,
+            device_map="auto"
+        )
+    elif experiment == 'bert':
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+        model = BertModel.from_pretrained("bert-base-uncased")
     else:
         raise ValueError("Please check the name of the experiment")
     return tokenizer, model
