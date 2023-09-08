@@ -8,10 +8,10 @@ from utils.learning import get_train_args, get_peft_config, get_model_and_tokeni
 from utils.evaluation import inference
 from datasets import Dataset
 from trl import SFTTrainer
-from transformers import logging as hf_logging
+# from transformers import logging as hf_logging
 
 
-hf_logging.set_verbosity_error()
+# hf_logging.set_verbosity_error()
 
 
 def main(
@@ -19,15 +19,13 @@ def main(
         experiment,
         output_dir,
         input_content,
+        exemplar,
         cache_dir,
         checkpoint_foldername='checkpoints',
         adapter_foldername='saved_adapters',
         loss_foldername='loss',
         response_foldername='responses',
 ):
-
-    if cache_dir is not None:
-        os.environ['TRANSFORMERS_CACHE'] = cache_dir
 
     ############################################
     #           Load and split data            #
@@ -42,14 +40,14 @@ def main(
     ############################################
 
     # Load the model
-    tokenizer, model = get_model_and_tokenizer(experiment)
+    tokenizer, model = get_model_and_tokenizer(experiment, cache_dir)
 
     # Construct the training prompts and test prompts
     train_samples = Dataset.from_dict({
-        'text': [get_prompt(instance, input_content, 'train') for instance in train_data]
+        'text': [get_prompt(instance, input_content, data_type='train', exemplar=exemplar) for instance in train_data]
     })
     test_samples = Dataset.from_dict({
-        'text': [get_prompt(instance, input_content, 'test') for instance in test_data],
+        'text': [get_prompt(instance, input_content, data_type='test', exemplar=exemplar) for instance in test_data],
         'label': [instance['label'] for instance in test_data]
     })
 
@@ -121,6 +119,8 @@ if __name__ == '__main__':
                         help='The name of the experiment you want to run.')
     parser.add_argument('-input_content', '--input_content',
                         help='Which part of the Twitter stream you want to use')
+    parser.add_argument('-exemplar', '--exemplar',
+                        help='How many examples we use in the prompt')
     parser.add_argument('-output_dir', '--output_dir',
                         help='The name of the output directory.')
     parser.add_argument('-cache_dir', '--cache_dir',
@@ -130,6 +130,7 @@ if __name__ == '__main__':
     main(
         data_dir=args.data_dir,
         experiment=args.experiment,
+        exemplar=args.exemplar,
         output_dir=args.output_dir,
         input_content=args.input_content,
         cache_dir=args.cache_dir,

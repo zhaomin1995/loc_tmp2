@@ -36,41 +36,46 @@ def get_peft_config(peft_name='lora'):
     return peft_config
 
 
-def get_model_and_tokenizer(experiment):
+def get_model_and_tokenizer(experiment, cache_dir):
     if experiment == 'flan_ul2':
         tokenizer = AutoTokenizer.from_pretrained('google/flan-ul2')
         model = AutoModelForSeq2SeqLM.from_pretrained(
             'google/flan-ul2',
             load_in_8bit=True,  # if we have enough GPU memory, we can set load_in_8bit as False
-            device_map="auto"
+            device_map="auto",
+            cache_dir=cache_dir
         )
     elif experiment == 'flan_t5':
         tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-large")
         model = T5ForConditionalGeneration.from_pretrained(
             "google/flan-t5-xxl",
             device_map="auto",
-            load_in_8bit=True
+            load_in_8bit=True,
+            cache_dir=cache_dir
         )
     elif experiment == 'ul2':
         tokenizer = AutoTokenizer.from_pretrained("google/ul2")
         model = AutoModelForSeq2SeqLM.from_pretrained(
             "google/ul2",
             load_in_8bit=True,
-            device_map="auto"
+            device_map="auto",
+            cache_dir=cache_dir
         )
     elif experiment == 't5':
         tokenizer = AutoTokenizer.from_pretrained("google/t5-v1_1-xxl")
         model = AutoModelForSeq2SeqLM.from_pretrained(
             "google/t5-v1_1-xxl",
             load_in_8bit=True,
-            device_map="auto"
+            device_map="auto",
+            cache_dir=cache_dir
         )
     elif experiment == 'alpaca':
         tokenizer = AutoTokenizer.from_pretrained("declare-lab/flan-alpaca-xxl")
         model = AutoModelForSeq2SeqLM.from_pretrained(
             "declare-lab/flan-alpaca-xxl",
             load_in_8bit=True,
-            device_map="auto"
+            device_map="auto",
+            cache_dir=cache_dir
         )
     elif experiment == 'bert':
         tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")

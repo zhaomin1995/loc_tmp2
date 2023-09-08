@@ -2,6 +2,29 @@ import json
 import re
 
 
+EXEMPLARS = [
+    (
+        "Read the tweets and determine if the author of the tweet is located in Dallas when the tweet was published. "
+        "Please only select the number listed below.\n\n"
+        "One thing that has surprised me since moving to Dallas is how beautiful the Texas sky can be.\n\n"
+        "OPTIONS:\n"
+        "1. Yes.\n"
+        "2. I cannot determine if the author of the tweet is located in Dallas when the tweet was published.\n"
+        "Answer: 1."
+    ),
+    (
+        "Read the tweets and determine if the author of the tweet is located in Dallas when the tweet was published. "
+        "Please only select the number listed below.\n\n"
+        "breaking news: the seattle kraken are being removed from the nhl because the booktok fans are done with them. "
+        "rip seattle kraken 2021-2023\n\n"
+        "OPTIONS:\n"
+        "1. Yes.\n"
+        "2. I cannot determine if the author of the tweet is located in Seattle when the tweet was published.\n"
+        "Answer: 2."
+    )
+]
+
+
 def clean_text(text):
     text = re.sub(r'http\S+', '', text)
     text = text.strip()
@@ -58,19 +81,24 @@ def combine_texts(texts, input_content):
         raise ValueError("Please check the input content")
 
 
-def format_prompt(prompt, label, data_type):
+def format_prompt(prompt, label, data_type, exemplar):
+
+    instruction = '\n\n'.join(EXEMPLARS)
+    model_input = ""
     if data_type == 'train':
-        model_input = (
-            f"### Prompt: {prompt}{label}"
-        )
+        if exemplar == 'few-shot':
+            model_input += f"### Instruction: {instruction}\n"
+        model_input += f"### Prompt: {prompt}{label}"
     else:
-        model_input = (
-            f"### Prompt: {prompt}"
-        )
+        if exemplar == 'few-shot':
+            model_input += f"### Instruction: {instruction}\n"
+        model_input += f"### Prompt: {prompt}"
+
     return model_input
 
 
-def get_prompt(instance, input_content, data_type):
+def get_prompt(instance, input_content, data_type, exemplar):
+
     tweet_text = combine_texts(instance['texts'], input_content)
     label = instance['label']
     location = instance['location']
@@ -78,10 +106,11 @@ def get_prompt(instance, input_content, data_type):
         f"Read the tweets and determine if the author of the tweet is located in {location} when the tweet was published. "
         "Please only select the number listed below.\n\n"
         f"{tweet_text}\n\n"
-        "OPTIONS:\n1. Yes\n2. I cannot determine if the author of the tweet is located in {location} when the tweet was published.\n"
+        f"OPTIONS:\n1. Yes.\n2. I cannot determine if the author of the tweet is located in {location} when the tweet was published.\n"
         "ANSWER: "
     )
-    prompt = format_prompt(prompt, label, data_type)
+    prompt = format_prompt(prompt, label, data_type, exemplar)
+
     return prompt
 
 
