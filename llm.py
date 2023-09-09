@@ -68,26 +68,26 @@ def main(
             args=training_args,
             train_dataset=train_samples,
             dataset_text_field="text",
-            max_seq_length=2048,
+            max_seq_length=1024,
             peft_config=peft_config,
         )
 
         # Start fine-tuning!
         trainer.train()
 
-        # # save the fine-tuned adapter
-        # adapter_folder = os.path.join(output_dir, adapter_foldername)
-        # Path(adapter_folder).mkdir(parents=True, exist_ok=True)
-        # adapter_path = os.path.join(adapter_folder, f"{experiment}_adapter")
-        # trainer.save_model(adapter_path)
+        # save the fine-tuned adapter
+        adapter_folder = os.path.join(output_dir, adapter_foldername)
+        Path(adapter_folder).mkdir(parents=True, exist_ok=True)
+        adapter_path = os.path.join(adapter_folder, f"{experiment}_adapter")
+        trainer.save_model(adapter_path)
 
-        # # save the loss of each step
-        # loss_folder = os.path.join(output_dir, loss_foldername)
-        # Path(loss_folder).mkdir(parents=True, exist_ok=True)
-        # loss_log_filename = f"loss_{experiment}"
-        # loss_log_filepath = os.path.join(loss_folder, loss_log_filename)
-        # with open(loss_log_filepath, 'w') as file:
-        #     json.dump(trainer.state.log_history, file)
+        # save the loss of each step
+        loss_folder = os.path.join(output_dir, loss_foldername)
+        Path(loss_folder).mkdir(parents=True, exist_ok=True)
+        loss_log_filename = f"loss_{experiment}"
+        loss_log_filepath = os.path.join(loss_folder, loss_log_filename)
+        with open(loss_log_filepath, 'w') as file:
+            json.dump(trainer.state.log_history, file)
 
     ############################################
     #                Inference                 #
@@ -98,7 +98,7 @@ def main(
     # save the predictions and references
     response_folder = os.path.join(output_dir, response_foldername)
     Path(response_folder).mkdir(parents=True, exist_ok=True)
-    output_filename = f"{experiment}_{input_content}_response"
+    output_filename = f"{experiment}_{input_content}_{exemplar}_response"
     output_filepath = os.path.join(response_folder, output_filename)
     output = {
         'predictions': predictions,
