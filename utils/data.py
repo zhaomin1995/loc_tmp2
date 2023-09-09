@@ -83,12 +83,14 @@ def combine_texts(texts, input_content):
 
 def format_prompt(prompt, label, data_type, exemplar):
 
+    label_mapping = {"Yes": "1.", "No": "2."}
+
     instruction = '\n\n'.join(EXEMPLARS)
     model_input = ""
     if data_type == 'train':
         if exemplar == 'few-shot':
             model_input += f"### Instruction: {instruction}\n"
-        model_input += f"### Prompt: {prompt}{label}"
+        model_input += f"### Prompt: {prompt}{label_mapping[label]}"
     else:
         if exemplar == 'few-shot':
             model_input += f"### Instruction: {instruction}\n"

@@ -100,8 +100,14 @@ def main(
     Path(response_folder).mkdir(parents=True, exist_ok=True)
     output_filename = f"{experiment}_{input_content}_{exemplar}_response"
     output_filepath = os.path.join(response_folder, output_filename)
+    mapped_predictions = []
+    for pred in predictions:
+        if pred.startswith('1'):
+            mapped_predictions.append('Yes')
+        if pred.startswith('2'):
+            mapped_predictions.append('No')
     output = {
-        'predictions': predictions,
+        'predictions': mapped_predictions,
         'labels': labels,
     }
     with open(output_filepath, 'w') as file:
