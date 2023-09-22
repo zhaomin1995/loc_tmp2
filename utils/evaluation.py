@@ -2,7 +2,7 @@ import torch
 from tqdm import tqdm
 
 
-def inference(model, tokenizer, test_samples, batch_size=8):
+def inference(model, tokenizer, test_samples, batch_size=2):
 
     predictions, labels = [], []
     tokenizer.pad_token = tokenizer.eos_token

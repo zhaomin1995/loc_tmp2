@@ -3,6 +3,7 @@ import re
 
 
 EXEMPLARS = [
+    # TODO: try different number of examples
     (
         "Read the tweets and determine if the author of the tweet is located in Dallas when the tweet was published. "
         "Please only select the number listed below.\n\n"
@@ -26,6 +27,7 @@ EXEMPLARS = [
 
 
 def clean_text(text):
+    # TODO: remove mention and hashtag
     text = re.sub(r'http\S+', '', text)
     text = text.strip()
     return text
@@ -69,6 +71,7 @@ def load_data(data_filepath, split_filepath):
 
 
 def combine_texts(texts, input_content):
+    # TODO: add indicator of each type explicitly
     if input_content == 'target':
         return texts[3]
     elif input_content == 'early_target':
@@ -82,6 +85,7 @@ def combine_texts(texts, input_content):
 
 
 def format_prompt(prompt, label, data_type, exemplar):
+    # TODO: return intermediate reasoning steps
 
     label_mapping = {"Yes": "1.", "No": "2."}
 
