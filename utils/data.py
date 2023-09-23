@@ -3,9 +3,9 @@ import re
 
 
 EXEMPLARS = [
-    # TODO: try different number of examples
-    (
-        "Read the tweets and determine if the author of the tweet is located in Dallas when the tweet was published. "
+    (  # 1st example (Yes)
+        "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
+        "The '#' in the hashtags and '@' in the mentions are removed. "
         "Please only select the number listed below.\n\n"
         "One thing that has surprised me since moving to Dallas is how beautiful the Texas sky can be.\n\n"
         "OPTIONS:\n"
@@ -13,8 +13,9 @@ EXEMPLARS = [
         "2. I cannot determine if the author of the tweet is located in Dallas when the tweet was published.\n"
         "Answer: 1."
     ),
-    (
-        "Read the tweets and determine if the author of the tweet is located in Dallas when the tweet was published. "
+    (  # 2nd example (No)
+        "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
+        "The '#' in the hashtags and '@' in the mentions are removed. "
         "Please only select the number listed below.\n\n"
         "breaking news: the seattle kraken are being removed from the nhl because the booktok fans are done with them. "
         "rip seattle kraken 2021-2023\n\n"
@@ -22,13 +23,94 @@ EXEMPLARS = [
         "1. Yes.\n"
         "2. I cannot determine if the author of the tweet is located in Seattle when the tweet was published.\n"
         "Answer: 2."
-    )
+    ),
+    (  # 3rd example (Yes)
+        "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
+        "The '#' in the hashtags and '@' in the mentions are removed. "
+        "Please only select the number listed below.\n\n"
+        "Memorial Day Weekend kickoff nachos with MikeBagarella. Top 1 nachos in Boston 💙\n\n"
+        "OPTIONS:\n"
+        "1. Yes.\n"
+        "2. I cannot determine if the author of the tweet is located in Boston when the tweet was published.\n"
+        "Answer: 1."
+    ),
+    (  # 4th example (Yes)
+        "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
+        "The '#' in the hashtags and '@' in the mentions are removed. "
+        "Please only select the number listed below.\n\n"
+        "Hiiiii we are live! I did some Christmas themed makeup. Come hang out ❤️❤️ PhoenixCartel \n\n"
+        "OPTIONS:\n"
+        "1. Yes.\n"
+        "2. I cannot determine if the author of the tweet is located in Phoenix when the tweet was published.\n"
+        "Answer: 1."
+    ),
+    (  # 5th example (Yes)
+        "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
+        "The '#' in the hashtags and '@' in the mentions are removed. "
+        "Please only select the number listed below.\n\n"
+        "Flew to Portland, Oregon to be with my sister-in-law, Estrellita Mendez and her family for Christmas.  I am so glad I did!\n\n"
+        "OPTIONS:\n"
+        "1. Yes.\n"
+        "2. I cannot determine if the author of the tweet is located in Portland when the tweet was published.\n"
+        "Answer: 1."
+    ),
+    (  # 6th example (Yes)
+        "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
+        "The '#' in the hashtags and '@' in the mentions are removed. "
+        "Please only select the number listed below.\n\n"
+        "Pulling up to the airport for our 3rd trip to Dallas this month. We are locked in and ready to go handle business on the road ✈️\n\n"
+        "OPTIONS:\n"
+        "1. Yes.\n"
+        "2. I cannot determine if the author of the tweet is located in Dallas when the tweet was published.\n"
+        "Answer: 1."
+    ),
+    (  # 7th example (No)
+        "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
+        "The '#' in the hashtags and '@' in the mentions are removed. "
+        "Please only select the number listed below.\n\n"
+        "driving to dallas. hope i have some inquiries when i get there\n\n"
+        "OPTIONS:\n"
+        "1. Yes.\n"
+        "2. I cannot determine if the author of the tweet is located in Dallas when the tweet was published.\n"
+        "Answer: 2."
+    ),
+    (  # 8th example (Yes)
+        "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
+        "The '#' in the hashtags and '@' in the mentions are removed. "
+        "Please only select the number listed below.\n\n"
+        "Trip to Dallas w my princess ❤️\n\n"
+        "OPTIONS:\n"
+        "1. Yes.\n"
+        "2. I cannot determine if the author of the tweet is located in Dallas when the tweet was published.\n"
+        "Answer: 1."
+    ),
+    (  # 9th example (Yes)
+        "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
+        "The '#' in the hashtags and '@' in the mentions are removed. "
+        "Please only select the number listed below.\n\n"
+        "Dallas is so beautiful. Right outside my house this exists. In between an old k-mart and a Highway of course.\n\n"
+        "OPTIONS:\n"
+        "1. Yes.\n"
+        "2. I cannot determine if the author of the tweet is located in Seattle when the tweet was published.\n"
+        "Answer: 1."
+    ),
+    (  # 10th example (Yes)
+        "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
+        "The '#' in the hashtags and '@' in the mentions are removed. "
+        "Please only select the number listed below.\n\n"
+        "a beautiful sunset from East Boston Massachusett ❤️\n\n"
+        "OPTIONS:\n"
+        "1. Yes.\n"
+        "2. I cannot determine if the author of the tweet is located in Boston when the tweet was published.\n"
+        "Answer: 1."
+    ),
 ]
 
 
 def clean_text(text):
-    # TODO: remove mention and hashtag
     text = re.sub(r'http\S+', '', text)
+    text = re.sub(r'#(\S+)', r'\1', text)  # remove the leading # in hashtag
+    text = re.sub(r'@(\S+)', r'\1', text)  # remove the leading @ in mention
     text = text.strip()
     return text
 
@@ -71,15 +153,26 @@ def load_data(data_filepath, split_filepath):
 
 
 def combine_texts(texts, input_content):
-    # TODO: add indicator of each type explicitly
     if input_content == 'target':
         return texts[3]
     elif input_content == 'early_target':
-        return '\n'.join(texts[:4])
+        concatenation = ''
+        for i, t in enumerate(texts[:4]):
+            concatenation += f'TWEET {i + 1}:\n'
+            concatenation += f'{t}\n\n'
+        return concatenation
     elif input_content == 'target_later':
-        return '\n'.join(texts[3:])
+        concatenation = ''
+        for i, t in enumerate(texts[3:]):
+            concatenation += f'TWEET {i + 1}:\n'
+            concatenation += f'{t}\n\n'
+        return concatenation
     elif input_content == 'all':
-        return '\n'.join(texts)
+        concatenation = ''
+        for i, t in enumerate(texts):
+            concatenation += f'TWEET {i + 1}:\n'
+            concatenation += f'{t}\n\n'
+        return concatenation
     else:
         raise ValueError("Please check the input content")
 
@@ -89,15 +182,19 @@ def format_prompt(prompt, label, data_type, exemplar):
 
     label_mapping = {"Yes": "1.", "No": "2."}
 
-    instruction = '\n\n'.join(EXEMPLARS)
+    if exemplar == 'one-shot':
+        instruction = '\n\n'.join(EXEMPLARS[:1])
+    if exemplar == 'five-shot':
+        instruction = '\n\n'.join(EXEMPLARS[:5])
+    if exemplar == 'ten-shot':
+        instruction = '\n\n'.join(EXEMPLARS[:10])
+
     model_input = ""
+    if exemplar != 'zero-shot':
+        model_input += f"### Instruction: {instruction}\n"
     if data_type == 'train':
-        if exemplar == 'few-shot':
-            model_input += f"### Instruction: {instruction}\n"
         model_input += f"### Prompt: {prompt}{label_mapping[label]}"
     else:
-        if exemplar == 'few-shot':
-            model_input += f"### Instruction: {instruction}\n"
         model_input += f"### Prompt: {prompt}"
 
     return model_input
@@ -109,7 +206,8 @@ def get_prompt(instance, input_content, data_type, exemplar):
     label = instance['label']
     location = instance['location']
     prompt = (
-        f"Read the tweets and determine if the author of the tweet is located at {location} when the tweet was published. "
+        f"Read the tweets chronologically published and determine if the author of the tweet is located at {location} when the tweet was published. "
+        "The '#' in the hashtags and '@' in the mentions are removed. "
         "Please only select the number listed below.\n\n"
         f"{tweet_text}\n\n"
         f"OPTIONS:\n"

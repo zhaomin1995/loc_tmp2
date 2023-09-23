@@ -8,6 +8,7 @@ from utils.learning import get_train_args, get_peft_config, get_model_and_tokeni
 from utils.evaluation import inference
 from datasets import Dataset
 from trl import SFTTrainer
+from sklearn.metrics import classification_report
 # from transformers import logging as hf_logging
 
 
@@ -24,7 +25,7 @@ def main(
         checkpoint_foldername='checkpoints',
         adapter_foldername='saved_adapters',
         loss_foldername='loss',
-        response_foldername='responses',
+        response_foldername='results',
 ):
 
     ############################################
@@ -55,7 +56,7 @@ def main(
 
         # Define the training arguments
         checkpoint_folder = os.path.join(output_dir, checkpoint_foldername)
-        checkpoint_subfolder = os.path.join(checkpoint_folder, f"{experiment}_checkpoints")
+        checkpoint_subfolder = os.path.join(checkpoint_folder, f"{experiment}_{input_content}_{exemplar}_checkpoints")
         Path(checkpoint_subfolder).mkdir(parents=True, exist_ok=True)
         training_args = get_train_args(checkpoint_subfolder)
 
@@ -78,13 +79,13 @@ def main(
         # save the fine-tuned adapter
         adapter_folder = os.path.join(output_dir, adapter_foldername)
         Path(adapter_folder).mkdir(parents=True, exist_ok=True)
-        adapter_path = os.path.join(adapter_folder, f"{experiment}_adapter")
+        adapter_path = os.path.join(adapter_folder, f"{experiment}_{input_content}_{exemplar}_adapter")
         trainer.save_model(adapter_path)
 
         # save the loss of each step
         loss_folder = os.path.join(output_dir, loss_foldername)
         Path(loss_folder).mkdir(parents=True, exist_ok=True)
-        loss_log_filename = f"loss_{experiment}"
+        loss_log_filename = f"loss_{experiment}_{input_content}_{exemplar}"
         loss_log_filepath = os.path.join(loss_folder, loss_log_filename)
         with open(loss_log_filepath, 'w') as file:
             json.dump(trainer.state.log_history, file)
@@ -98,7 +99,7 @@ def main(
     # save the predictions and references
     response_folder = os.path.join(output_dir, response_foldername)
     Path(response_folder).mkdir(parents=True, exist_ok=True)
-    output_filename = f"{experiment}_{input_content}_{exemplar}_response"
+    output_filename = f"{experiment}_{input_content}_{exemplar}_result"
     output_filepath = os.path.join(response_folder, output_filename)
     mapped_predictions = []
     for pred in predictions:
@@ -106,12 +107,9 @@ def main(
             mapped_predictions.append('Yes')
         if pred.startswith('2'):
             mapped_predictions.append('No')
-    output = {
-        'predictions': mapped_predictions,
-        'labels': labels,
-    }
+    results = classification_report(mapped_predictions, labels, output_dict=True)
     with open(output_filepath, 'w') as file:
-        json.dump(output, file)
+        json.dump(results, file)
 
 
 if __name__ == '__main__':
