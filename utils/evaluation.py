@@ -11,7 +11,7 @@ def inference(model, tokenizer, test_samples, batch_size=8):
         for start in range(0, len(test_samples['text']), batch_size):
             end = min(start + batch_size, len(test_samples['text']))
             texts = [sample for sample in test_samples['text'][start: end]]
-            input_ids = tokenizer(texts, return_tensors='pt', max_length=1500, padding=True, truncation=True).to(model.device)
+            input_ids = tokenizer(texts, return_tensors='pt', max_length=2000, padding=True, truncation=True).to(model.device)
             output_tokens = model.generate(**input_ids, max_new_tokens=50, do_sample=False, use_cache=True)
             for ele in output_tokens:
                 decoded_output = tokenizer.decode(ele, skip_special_tokens=True)

@@ -91,7 +91,7 @@ def main(
             json.dump(trainer.state.log_history, file)
 
     ############################################
-    #                Inference                 #
+    #                Inference                 #]
     ############################################
 
     predictions, labels = inference(model, tokenizer, test_samples)

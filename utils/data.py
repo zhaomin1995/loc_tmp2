@@ -6,7 +6,7 @@ EXEMPLARS = [
     (  # 1st example (Yes)
         "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
         "The '#' in the hashtags and '@' in the mentions are removed. "
-        "Please only select the number listed below.\n\n"
+        "Please select the number listed below.\n\n"
         "One thing that has surprised me since moving to Dallas is how beautiful the Texas sky can be.\n\n"
         "OPTIONS:\n"
         "1. Yes.\n"
@@ -16,7 +16,7 @@ EXEMPLARS = [
     (  # 2nd example (No)
         "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
         "The '#' in the hashtags and '@' in the mentions are removed. "
-        "Please only select the number listed below.\n\n"
+        "Please select the number listed below.\n\n"
         "breaking news: the seattle kraken are being removed from the nhl because the booktok fans are done with them. "
         "rip seattle kraken 2021-2023\n\n"
         "OPTIONS:\n"
@@ -27,7 +27,7 @@ EXEMPLARS = [
     (  # 3rd example (Yes)
         "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
         "The '#' in the hashtags and '@' in the mentions are removed. "
-        "Please only select the number listed below.\n\n"
+        "Please select the number listed below.\n\n"
         "Memorial Day Weekend kickoff nachos with MikeBagarella. Top 1 nachos in Boston 💙\n\n"
         "OPTIONS:\n"
         "1. Yes.\n"
@@ -37,7 +37,7 @@ EXEMPLARS = [
     (  # 4th example (Yes)
         "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
         "The '#' in the hashtags and '@' in the mentions are removed. "
-        "Please only select the number listed below.\n\n"
+        "Please select the number listed below.\n\n"
         "Hiiiii we are live! I did some Christmas themed makeup. Come hang out ❤️❤️ PhoenixCartel \n\n"
         "OPTIONS:\n"
         "1. Yes.\n"
@@ -47,7 +47,7 @@ EXEMPLARS = [
     (  # 5th example (Yes)
         "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
         "The '#' in the hashtags and '@' in the mentions are removed. "
-        "Please only select the number listed below.\n\n"
+        "Please select the number listed below.\n\n"
         "Flew to Portland, Oregon to be with my sister-in-law, Estrellita Mendez and her family for Christmas.  I am so glad I did!\n\n"
         "OPTIONS:\n"
         "1. Yes.\n"
@@ -57,7 +57,7 @@ EXEMPLARS = [
     (  # 6th example (Yes)
         "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
         "The '#' in the hashtags and '@' in the mentions are removed. "
-        "Please only select the number listed below.\n\n"
+        "Please select the number listed below.\n\n"
         "Pulling up to the airport for our 3rd trip to Dallas this month. We are locked in and ready to go handle business on the road ✈️\n\n"
         "OPTIONS:\n"
         "1. Yes.\n"
@@ -67,7 +67,7 @@ EXEMPLARS = [
     (  # 7th example (No)
         "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
         "The '#' in the hashtags and '@' in the mentions are removed. "
-        "Please only select the number listed below.\n\n"
+        "Please select the number listed below.\n\n"
         "driving to dallas. hope i have some inquiries when i get there\n\n"
         "OPTIONS:\n"
         "1. Yes.\n"
@@ -77,7 +77,7 @@ EXEMPLARS = [
     (  # 8th example (Yes)
         "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
         "The '#' in the hashtags and '@' in the mentions are removed. "
-        "Please only select the number listed below.\n\n"
+        "Please select the number listed below.\n\n"
         "Trip to Dallas w my princess ❤️\n\n"
         "OPTIONS:\n"
         "1. Yes.\n"
@@ -87,7 +87,7 @@ EXEMPLARS = [
     (  # 9th example (Yes)
         "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
         "The '#' in the hashtags and '@' in the mentions are removed. "
-        "Please only select the number listed below.\n\n"
+        "Please select the number listed below.\n\n"
         "Dallas is so beautiful. Right outside my house this exists. In between an old k-mart and a Highway of course.\n\n"
         "OPTIONS:\n"
         "1. Yes.\n"
@@ -97,7 +97,7 @@ EXEMPLARS = [
     (  # 10th example (Yes)
         "Read the tweets chronologically published and determine if the author of the tweet is located in Dallas when the tweet was published. "
         "The '#' in the hashtags and '@' in the mentions are removed. "
-        "Please only select the number listed below.\n\n"
+        "Please select the number listed below.\n\n"
         "a beautiful sunset from East Boston Massachusett ❤️\n\n"
         "OPTIONS:\n"
         "1. Yes.\n"
@@ -160,18 +160,21 @@ def combine_texts(texts, input_content):
         for i, t in enumerate(texts[:4]):
             concatenation += f'TWEET {i + 1}:\n'
             concatenation += f'{t}\n\n'
+        concatenation = concatenation.rstrip('\n')
         return concatenation
     elif input_content == 'target_later':
         concatenation = ''
         for i, t in enumerate(texts[3:]):
             concatenation += f'TWEET {i + 1}:\n'
             concatenation += f'{t}\n\n'
+        concatenation = concatenation.rstrip('\n')
         return concatenation
     elif input_content == 'all':
         concatenation = ''
         for i, t in enumerate(texts):
             concatenation += f'TWEET {i + 1}:\n'
             concatenation += f'{t}\n\n'
+        concatenation = concatenation.rstrip('\n')
         return concatenation
     else:
         raise ValueError("Please check the input content")
@@ -208,7 +211,7 @@ def get_prompt(instance, input_content, data_type, exemplar):
     prompt = (
         f"Read the tweets chronologically published and determine if the author of the tweet is located at {location} when the tweet was published. "
         "The '#' in the hashtags and '@' in the mentions are removed. "
-        "Please only select the number listed below.\n\n"
+        "Please select the number listed below and justify your answer.\n\n"
         f"{tweet_text}\n\n"
         f"OPTIONS:\n"
         f"1. Yes.\n"
