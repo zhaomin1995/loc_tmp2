@@ -135,6 +135,7 @@ def load_data(data_filepath, split_filepath):
                 clean_text(item['context8_tweettext']),
                 clean_text(item['context9_tweettext']),
                 clean_text(item['context10_tweettext']),
+                clean_text(item['anchor_tweettext']),
                 clean_text(item['context11_tweettext']),
                 clean_text(item['context12_tweettext']),
                 clean_text(item['context13_tweettext']),
