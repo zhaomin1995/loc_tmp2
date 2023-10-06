@@ -3,7 +3,7 @@ import json
 import os
 from pathlib import Path
 from utils.data import load_data, get_prompt
-from utils.learning import get_train_args, get_peft_config, get_model_and_tokenizer
+from utils.learning import get_train_args, get_peft_config, get_model_and_tokenizer, prepare_model_for_training
 from utils.evaluation import inference
 from datasets import Dataset
 from trl import SFTTrainer
@@ -65,6 +65,7 @@ def main(
         peft_config = get_peft_config()
 
         # Define the Trainer
+        model = prepare_model_for_training(model)
         model = get_peft_model(model, peft_config)
         trainer = SFTTrainer(
             model=model,

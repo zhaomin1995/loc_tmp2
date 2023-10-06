@@ -14,7 +14,7 @@ from peft import LoraConfig
 def get_train_args(output_dir):
     training_args = TrainingArguments(
         output_dir=output_dir,
-        per_device_train_batch_size=1,
+        per_device_train_batch_size=4,
         gradient_accumulation_steps=1,
         bf16=True,
         learning_rate=1e-5,
@@ -29,7 +29,7 @@ def get_train_args(output_dir):
 
 def get_peft_config(peft_name='lora'):
     if peft_name == 'lora':
-        peft_config = LoraConfig(lora_alpha=16, lora_dropout=0.1, r=8, task_type="CAUSAL_LM")
+        peft_config = LoraConfig(lora_alpha=8, lora_dropout=0.1, r=4, task_type="CAUSAL_LM")
     elif peft_name == 'prefix-tuning':
         pass  # this is on the research agenda
     elif peft_name == 'prompt-tuning':
