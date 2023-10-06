@@ -1,6 +1,5 @@
 import argparse
 import json
-import torch
 import os
 from pathlib import Path
 from utils.data import load_data, get_prompt
@@ -8,6 +7,7 @@ from utils.learning import get_train_args, get_peft_config, get_model_and_tokeni
 from utils.evaluation import inference
 from datasets import Dataset
 from trl import SFTTrainer
+from peft import get_peft_model
 from sklearn.metrics import classification_report
 # from transformers import logging as hf_logging
 
@@ -25,7 +25,8 @@ def main(
         checkpoint_foldername='checkpoints',
         adapter_foldername='saved_adapters',
         loss_foldername='loss',
-        response_foldername='results',
+        result_foldername='results',
+        response_foldername='responses',
 ):
 
     ############################################
@@ -64,13 +65,13 @@ def main(
         peft_config = get_peft_config()
 
         # Define the Trainer
+        model = get_peft_model(model, peft_config)
         trainer = SFTTrainer(
             model=model,
             args=training_args,
             train_dataset=train_samples,
             dataset_text_field="text",
             max_seq_length=1024,
-            peft_config=peft_config,
         )
 
         # Start fine-tuning!
@@ -96,19 +97,29 @@ def main(
 
     predictions, labels = inference(model, tokenizer, test_samples)
 
-    # save the predictions and references
-    response_folder = os.path.join(output_dir, response_foldername)
-    Path(response_folder).mkdir(parents=True, exist_ok=True)
-    output_filename = f"{experiment}_{input_content}_{exemplar}_result"
-    output_filepath = os.path.join(response_folder, output_filename)
+    # map the model responses to the actual labels
     mapped_predictions = []
     for pred in predictions:
         if pred.startswith('1'):
             mapped_predictions.append('Yes')
         if pred.startswith('2'):
             mapped_predictions.append('No')
+
+    # save the model responses
+    response_folder = os.path.join(output_dir, response_foldername)
+    Path(response_folder).mkdir(parents=True, exist_ok=True)
+    response_filename = f"{experiment}_{input_content}_{exemplar}_response"
+    response_filepath = os.path.join(response_folder, response_filename)
+    with open(response_filepath, 'w') as file:
+        json.dump(mapped_predictions, file)
+
+    # save the evaluation results
+    result_folder = os.path.join(output_dir, result_foldername)
+    Path(result_folder).mkdir(parents=True, exist_ok=True)
+    result_filename = f"{experiment}_{input_content}_{exemplar}_result"
+    result_filepath = os.path.join(result_folder, result_filename)
     results = classification_report(mapped_predictions, labels, output_dict=True)
-    with open(output_filepath, 'w') as file:
+    with open(result_filepath, 'w') as file:
         json.dump(results, file)
 
 

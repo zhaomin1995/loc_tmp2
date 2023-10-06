@@ -1,3 +1,5 @@
+import torch
+import torch.nn as nn
 from transformers import (
     BertModel,
     T5Tokenizer,
@@ -12,14 +14,15 @@ from peft import LoraConfig
 def get_train_args(output_dir):
     training_args = TrainingArguments(
         output_dir=output_dir,
-        per_device_train_batch_size=32,
+        per_device_train_batch_size=1,
         gradient_accumulation_steps=1,
+        bf16=True,
         learning_rate=1e-5,
         logging_steps=5,
         save_strategy="epoch",
         save_steps=50,
         save_total_limit=5,
-        num_train_epochs=5,
+        num_train_epochs=1,
     )
     return training_args
 
@@ -48,7 +51,7 @@ def get_model_and_tokenizer(experiment, cache_dir):
             cache_dir=cache_dir
         )
     elif experiment == 'flan_t5':
-        tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-large")
+        tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-xxl")
         model = T5ForConditionalGeneration.from_pretrained(
             "google/flan-t5-xxl",
             device_map="auto",
@@ -85,3 +88,29 @@ def get_model_and_tokenizer(experiment, cache_dir):
     else:
         raise ValueError("Please check the name of the experiment")
     return tokenizer, model
+
+
+def prepare_model_for_training(model):
+    """
+    This function is for preparing the model loaded in 8bit but training in 32 float precision
+    :param model:
+    :return:
+    """
+    for param in model.parameters():
+        param.requires_grad = False  # freeze the model - train adapters later
+        if param.ndim == 1:
+            # cast the small parameters (e.g. layernorm) to fp32 for stability
+            param.data = param.data.to(torch.float32)
+
+    model.gradient_checkpointing_enable()  # reduce number of stored activations
+    model.enable_input_require_grads()
+
+    class CastOutputToFloat(nn.Sequential):
+        def forward(self, x):
+            return super().forward(x).to(torch.float32)
+
+    model.lm_head = CastOutputToFloat(model.lm_head)
+    model.config.use_cache = False
+
+    return model
+

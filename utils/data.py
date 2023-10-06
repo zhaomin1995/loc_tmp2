@@ -212,7 +212,8 @@ def get_prompt(instance, input_content, data_type, exemplar):
     prompt = (
         f"Read the tweets chronologically published and determine if the author of the tweet is located at {location} when the tweet was published. "
         "The '#' in the hashtags and '@' in the mentions are removed. "
-        "Please select the number listed below and justify your answer.\n\n"
+        f"If the tweets are associated with advertisements or news reports, then the author of the tweet is more likely at {location}. "
+        "Please select the number listed below.\n\n"
         f"{tweet_text}\n\n"
         f"OPTIONS:\n"
         f"1. Yes.\n"
