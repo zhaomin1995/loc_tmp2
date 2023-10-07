@@ -18,11 +18,12 @@ def get_train_args(output_dir):
         gradient_accumulation_steps=1,
         bf16=True,
         learning_rate=1e-5,
-        logging_steps=5,
+        logging_steps=50,
         save_strategy="epoch",
         save_steps=50,
         save_total_limit=5,
         num_train_epochs=5,
+        max_steps=10,
     )
     return training_args
 
@@ -111,6 +112,26 @@ def prepare_model_for_training(model):
 
     model.lm_head = CastOutputToFloat(model.lm_head)
     model.config.use_cache = False
+
+    return model
+
+
+def prepare_model_for_inference(model):
+    """
+    This function is for preparing the model for inference
+    :param model:
+    :return:
+    """
+    for param in model.parameters():
+        param.data = param.data.to(torch.float32)
+
+    model.gradient_checkpointing_enable()
+
+    class CastOutputToFloat(nn.Sequential):
+        def forward(self, x):
+            return super().forward(x).to(torch.float32)
+
+    model.lm_head = CastOutputToFloat(model.lm_head)
 
     return model
 

@@ -3,7 +3,13 @@ import json
 import os
 from pathlib import Path
 from utils.data import load_data, get_prompt
-from utils.learning import get_train_args, get_peft_config, get_model_and_tokenizer, prepare_model_for_training
+from utils.learning import (
+    get_train_args,
+    get_peft_config,
+    get_model_and_tokenizer,
+    prepare_model_for_training,
+    prepare_model_for_inference
+)
 from utils.evaluation import inference
 from datasets import Dataset
 from trl import SFTTrainer
@@ -92,6 +98,8 @@ def main(
         with open(loss_log_filepath, 'w') as file:
             json.dump(trainer.state.log_history, file)
 
+        model = prepare_model_for_inference(model)
+
     ############################################
     #                Inference                 #]
     ############################################
@@ -112,7 +120,7 @@ def main(
     response_filename = f"{experiment}_{input_content}_{exemplar}_response"
     response_filepath = os.path.join(response_folder, response_filename)
     with open(response_filepath, 'w') as file:
-        json.dump(mapped_predictions, file)
+        json.dump(predictions, file)
 
     # save the evaluation results
     result_folder = os.path.join(output_dir, result_foldername)
