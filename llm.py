@@ -65,6 +65,8 @@ def main(
         checkpoint_folder = os.path.join(output_dir, checkpoint_foldername)
         checkpoint_subfolder = os.path.join(checkpoint_folder, f"{experiment}_{input_content}_{exemplar}_checkpoints")
         Path(checkpoint_subfolder).mkdir(parents=True, exist_ok=True)
+
+        # get the training arguments
         training_args = get_train_args(checkpoint_subfolder)
 
         # Use PEFT to only finetune part of its parameters
@@ -78,7 +80,7 @@ def main(
             args=training_args,
             train_dataset=train_samples,
             dataset_text_field="text",
-            max_seq_length=1024,
+            max_seq_length=2048,
         )
 
         # Start fine-tuning!
@@ -111,7 +113,9 @@ def main(
     for pred in predictions:
         if pred.startswith('1'):
             mapped_predictions.append('Yes')
-        if pred.startswith('2'):
+        elif pred.startswith('2'):
+            mapped_predictions.append('No')
+        else:
             mapped_predictions.append('No')
 
     # save the model responses

@@ -22,8 +22,8 @@ def get_train_args(output_dir):
         save_strategy="epoch",
         save_steps=50,
         save_total_limit=5,
-        num_train_epochs=5,
-        max_steps=10,
+        # num_train_epochs=1,
+        max_steps=1200,
     )
     return training_args
 
