@@ -131,7 +131,7 @@ def main(
     Path(result_folder).mkdir(parents=True, exist_ok=True)
     result_filename = f"{experiment}_{input_content}_{exemplar}_result"
     result_filepath = os.path.join(result_folder, result_filename)
-    results = classification_report(mapped_predictions, labels, output_dict=True)
+    results = classification_report(labels, mapped_predictions, output_dict=True)
     with open(result_filepath, 'w') as file:
         json.dump(results, file)
 
